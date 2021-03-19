@@ -1,16 +1,22 @@
-# Myc Pten Analysis<br/> MYC-deficiency impairs the development of effector/memory T lymphocytes<br/>
+#MYC-deficiency impairs the development of effector/memory T lymphocytes<br/>
 Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
 *These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
 Link to article : (TO come)
+
 ---
+
 ### Overview
 This repository contains the instructions and material to reproduce the analysis reported in the article. Source code is available in the github repository. Required data and builded Docker/singularity images are available respectively in SRA/GEO and Zenodo. Intructions to reproduce the analysis are provided in the different subdirectories:
 
 - Fastq preprocessing is discribed in the 01_FASTQ_Preprocessing folder
+In order to re do Fastq preprocessing you can follow guidelines and script here : link to readm me 01_FASTQ_Preprocessing
 - Seurat analysis is discribed in the 02_Seurat_analysis
+In order to re do Seurat Analysis you can follow guidelines and script here : link to Readme 02_Seurat_analysis
+
 ---
+
 ### Data Availability
 #### Fastq preprocessing
 - 10 Fastq are availabe in SRA under the accession ID xxxxxxx
@@ -21,14 +27,11 @@ This repository contains the instructions and material to reproduce the analysis
   - link Cell ranger
   - link CITE seq count
 
-In order to re do Fastq preprocessing you can follow guidelines and script here : link to readm me 01_FASTQ_Preprocessing
-
 #### Seurat analysis
 - Seurat Html report containing figures generated in R from article can be downloaded here : link githtml report
 - Seurat rmd script to reproduce the analysis can be found here : link to git script
 Rmd script can be found here : link script
 
-In order to re do Seurat Analysis you can follow guidelines and script here : link to Readme 02_Seurat_analysis
 
 #### Docker and Singularity images
 Singularity/Docker images and Robj are all availabe in Zenodo : link
