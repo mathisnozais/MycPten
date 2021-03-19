@@ -1,4 +1,3 @@
-## TEST PULL
 # Seurat analysis
 ## Overview
 This repository describes how the scRNAseq data analysis was performed with Seurat. It contains the instructions and material to reproduce the analysis reported in the article (and more).

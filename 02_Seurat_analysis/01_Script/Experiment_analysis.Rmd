@@ -1,0 +1,740 @@
+---
+title: "Experiment_analysis"
+author: "Delphine Potier / Mathis Nozais / Saran Pankaew"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+    
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
+```
+
+
+#to do before publish
+```{r}
+#remettre ligne de code general identification (trop long a calcul pour les test de knit) + remettre pour cluster 13 deux premiere ligne list..
+
+#cluster 3 DP small, 8,10,16
+#11 refaire text marqueur
+#refaire cluster 13 avec annot one note pour petit iddentif des pop
+#DP blast put cell cycle umap ? dans le fichier myc_pten_paper --> report mycpten..cccaintegration_modif
+
+#revoir titre partie en fonction du papier
+#refaire docker en verifiant que tout les librairies necessaire sont dowloand dedans
+
+#verif tout comm sont bein en anglais
+
+#CD8 vs CD4 remettre les calcul de fin marker pour le final et pas le load fichier qui est la poru gagner du temps
+```
+
+
+
+```{r env_loading, include=FALSE}
+# Load packages, data and functions
+library(Seurat)
+library(plotly)
+library(kableExtra)
+library(ggplot2)
+library(gridExtra)
+#install.packages("fmsb")
+library(fmsb)
+BiocManager::install("clusterProfiler")
+BiocManager::install("enrichplot")
+library(enrichplot)
+library(clusterProfiler)
+#library(ggrepel)
+#install.packages("tidyr")
+#library("tidyr")
+install.packages("ggthemes")
+library(ggthemes)
+#library(scales)
+library(stringr)
+
+
+#Path to the analysis folder
+WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_repo/"
+# Path to the folder containing scripts used in the analysis
+CWD <- "/home/nozaism/Workspace/Function_delphine/" 
+# Load the R scripts containing the functions used in the analysis
+source(paste(CWD, "Workflow_functions_S3.R", sep="/"))
+#  Path to the folder that will contain output objects
+OUTPUT_PATH <- (paste0(WORKSPACE,"02_Seurat_analysis/02_Output/"))
+# Set the random number seed
+set.seed(1234)
+# Resolution parameter for Seurat clustering
+RESOLUTION <- 1
+```
+
+```{r,results='asis'}
+#loading final object obtain with Experiment_preprocessing
+SAMPLE1 <- "181031"
+SAMPLE2 <- "190211"
+
+if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))){
+print("You should start with Experiment_preprocessing.Rmd or dowload our final object 'T-Seurat-merged_clean-subset.Robj' ")
+do <- FALSE
+}else{ 
+print ("You are starting analysis of our final Seurat object")
+load(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))
+do <- TRUE
+}
+
+```
+
+
+```{asis, eval=(do == TRUE ), echo=TRUE}
+# Creating tissue subset
+## Thymus subset
+```
+
+```{r,eval=(do == TRUE )}
+Idents(T.Seurat) <- "HTO"
+T.Seurat.thymus <- subset(T.Seurat, idents = c("Myc- PTEN- thymus","MYC- thymus","PTEN- thymus","WT thymus"))
+a <- t(margin.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$integrated_snn_res.1.8),2))
+T.Seurat.spleen <- subset(T.Seurat, idents = c("Myc- PTEN- spleen","MYC- spleen","PTEN- spleen","WT spleen"))
+b <- t(margin.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$integrated_snn_res.1.8),2))
+c <- t((a/(a+b)*100))
+c
+#Thymic populations
+thymus.clusters <- rownames(as.data.frame(c[which(c[,1]>25),]))
+Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
+T.Seurat.thymus <- subset(T.Seurat.thymus, idents = thymus.clusters)
+DimPlot(T.Seurat.thymus)
+```
+
+```{asis, eval=(do == TRUE ), echo=TRUE}
+## Spleen subset
+```
+
+
+```{r}
+#Spleen populations
+as.data.frame(100-c[which(c[,1]<75),])
+spleen.clusters <- rownames(as.data.frame(c[which(c[,1]<75),]))
+Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+T.Seurat.spleen <- subset(T.Seurat.spleen, idents = spleen.clusters)
+DimPlot(T.Seurat.spleen)
+```
+
+# Manual clustering
+Based on several markers we are adjusting our clusterging, similar cluster are then annotate as one.
+
+Thymic clusters :
+```{r}
+#Look at differentiation markers on thymic clusters
+DotPlot(T.Seurat.thymus, features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Uchl3","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme_dark(base_size = 14) + coord_flip()
+
+#Regroup thymic clusters
+#Similar cluster are annotate as one
+Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
+T.Seurat.thymus@meta.data$manualclusters = "nothing"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "22"),]$manualclusters = "22"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "21"),]$manualclusters = "21"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("20","18","14")),]$manualclusters = "20,18,14"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("8","2","3","23")),]$manualclusters = "8,2,3,23"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "6"),]$manualclusters = "6"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "7"),]$manualclusters = "7"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("10","16")),]$manualclusters = "10,16"
+T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "17"),]$manualclusters = "17"
+```
+
+Splenic clusters :
+```{r}
+
+#Look at differentiation markers on splenic clusters
+DotPlot(T.Seurat.spleen, features = c("Aes","Anxa1","Ifng","Itgal","Foxp3","S1pr1","Sell","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme_dark(base_size = 14) + coord_flip()
+
+#Regroup splenic clusters
+#Similar cluster are annotate as one
+Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+T.Seurat.spleen@meta.data$manualclusters = "nothing"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "4"),]$manualclusters = "4"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "1"),]$manualclusters = "1"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "9"),]$manualclusters = "9"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "12"),]$manualclusters = "12"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "11"),]$manualclusters = "11"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "19"),]$manualclusters = "19"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "13"),]$manualclusters = "13"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "17"),]$manualclusters = "17"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = c("10","16")),]$manualclusters = "10,16"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "15"),]$manualclusters = "15"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = c("0","5")),]$manualclusters = "0,5"
+```
+
+
+## Dot plot thymus
+
+Setting thymic cluster order 
+```{r}
+Idents(T.Seurat.thymus) <- "manualclusters"
+T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20,18,14","8,2,3,23","7","6","10,16","17"))
+levels(T.Seurat.thymus)
+```
+
+```{r}
+DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55"))
+```
+
+## Dot plot spleen
+
+Setting splenic cluster order 
+```{r}
+Idents(T.Seurat.spleen) <- "manualclusters"
+T.Seurat.spleen@active.ident <- factor(T.Seurat.spleen@active.ident,levels=c("10,16","1","4","0,5","12","15","9","17","13","11","19"))
+```
+
+```{r}
+DotPlot(T.Seurat.spleen, dot.scale = 8, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55")) + coord_flip()
+```
+
+
+# Cluster Identification
+## General Identification markers
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+DefaultAssay(T.Seurat) <- "RNA"
+#markerspleen <- FindAllMarkers(T.Seurat)
+```
+
+## Detailed identification {.tabset .tabset-fade}
+### Cluster 0
+```{r,fig.width = 15, fig.height = 4}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+FeaturePlot(T.Seurat, features = c("adt_CD4","Sell","Cd8b1"),ncol = 3,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","Cd8b1"),blend = T,
+blend.threshold= 0.4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+Cluster 0 seems to contain naive SP4 cells (CD4+, Cd8- and CD62L-)
+
+### Cluster 1
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1","Sell"),ncol = 4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","Cd8b1"),blend = T,
+blend.threshold= 0.4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+Cluster 1 seems to contain CD8 naive T cells (CD4-, Cd8+ and CD62L-)
+
+### Cluster 2
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1","Sell"),ncol = 4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","Cd8b1"),blend = T,
+blend.threshold= 0.4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+
+Cluster 2 seems to contain DP cells (CD4+, CD8+, CD62L-)
+
+### Cluster 3
+
+### Cluster 4
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1","Sell"),ncol = 4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","Cd8b1"),blend = T,
+blend.threshold= 0.4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+Cluster 4 seems to contain CD8 naive T cells (CD4-, Cd8+, and CD62L-)
+
+### Cluster 5
+```{r,fig.width = 15, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Sell","Cd8b1"),ncol = 3,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r, fig.width = 20, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","Cd8b1"),blend = T,
+blend.threshold= 0.4,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+Cluster 5 seems to contain naive SP4 cells (CD4+, Cd8- and CD62L-)
+
+### Cluster 6
+```{r}
+FeaturePlot(T.Seurat, features = c("percent.mito"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"), pt.size = 1)
+```
+Cluster 6 seems to contain dying cells
+
+### Cluster 7
+```{r,fig.width = 15, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd69","Cd5","Satb1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black")) #marker of TCR activation 
+```
+Seems to contain cells going from DP to SP between thymus and spleen
+
+### Cluster 8
+
+### Cluster 9
+```{r, fig.width = 10, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd4","adt_CD4"))
+```
+
+```{r, fig.width = 20, fig.height = 16}
+VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r","Cxcr3"),ncol=2) # Cxcr3 high on effector
+```
+Seems to contain CD4 eff (Cd4+, Sell-, Ccr7-, Cd127-)
+
+### Cluster 10
+```{r clsuter10}
+
+```
+
+### Cluster 11
+```{r cluster11, fig.width = 10, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd8b1","Sell","Ccl5","adt_CD4"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+
+FeaturePlot(T.Seurat, features = c("Trac","Trbc1","Trdc","Tcrg-C1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 10, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Ly6c2","Nkg7"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 15, fig.height = 6}
+VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r"))
+```
+
+Cluster 11 Seems to contain CD8 mem cells & seem to contain Tgd cells & Ly6c2+
+
+### Cluster 12
+```{r cluster12}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Sell","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeatureScatter(object = T.Seurat, feature1 = "adt_CD4", feature2 = "CD8", cells = colnames(subset(T.Seurat, idents = "0")), slot = "data")
+```
+Cluster 12 seems to contain naive SP4 cells (CD4+, Cd8- and CD62L -)
+
+### Cluster 13
+```{r cluster13,include=FALSE}
+#listmark13 <- (markerspleen[which (markerspleen$cluster == "13" & markerspleen$avg_logFC >0), ]) #choose gene overexpress in cluster 13 cells
+#listmark13 <- listmark13$gene
+
+#On Imgen gene set : Identify as CD8 and/or NKT
+# Try to see if we can subdivise this cluster to identify clear population
+#cluster subset 13
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+cluster13 <- subset(T.Seurat,  idents = c("13"))
+DefaultAssay(cluster13) <- "RNA" # to avoid error when re subseting https://github.com/satijalab/seurat/issues/1528
+
+#cluster13 <- NormalizeData(cluster13,display.progress = FALSE)
+cluster13 <- FindVariableFeatures(cluster13, do.plot = F, selection.method = "vst", nfeatures = 2000, display.progress = FALSE)
+
+cluster13 <- ScaleData( object =  cluster13, 
+                      assay="RNA",
+                      verbose = FALSE,
+                      #do.scale = FALSE,
+                      do.center = TRUE)
+
+
+cluster13 <- RunPCA(object = cluster13, features = VariableFeatures(object = cluster13), npcs = 100, seed.use = 1234, verbose = FALSE)
+  
+ElbowPlot(cluster13, ndims = 50, reduction = "pca")
+  
+  # Scorer les genes pour les composantes
+cluster13 <- ProjectDim(object = cluster13,
+                  nfeatures.print = 20,
+                  dims.print = 1:20)
+  
+cluster13 <- FindNeighbors(object = cluster13,
+                  assay = "RNA",
+                  dims = 1:20 , 
+                  verbose = FALSE)#, 
+                  #force.recalc = TRUE, 
+                  #reduction = "pca")
+  
+cluster13 <- FindClusters(object = cluster13, 
+                  assay = "RNA",
+                  resolution = 1,
+                  verbose = FALSE,
+                  random.seed = 1234)
+  #To make the UMAP
+  #######################
+  cluster13 <- RunUMAP(object = cluster13, reduction = "pca", seed.use = 1234, dims = 1:20)
+   
+   DimPlot(cluster13)
+   
+   mark13 <- FindAllMarkers(cluster13)
+   top_genes_feature_plot <- mark13 %>% group_by(cluster) %>% top_n(5, avg_logFC) # take 5 first gene of each cluster
+```
+
+
+```{r,fig.width = 15, fig.height = 8}
+plot1 <- DotPlot(cluster13, dot.scale = 10, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55")) + coord_flip()
+plot2 <- DotPlot(cluster13, dot.scale = 10, features= unique(top_genes_feature_plot$gene)) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55")) + coord_flip()
+grid.arrange(plot1, plot2, ncol=2)
+#table(cluster13@meta.data$integrated_snn_res.1)
+```
+This cluster is heterogeneous
+
+### Cluster 14
+```{r,fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+
+```{r,fig.width = 15, fig.height = 6}
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
+```
+Cluster 14 seems to be Dp blast
+
+### Cluster 15
+```{r cluster15, fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Foxp3","Il2ra"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+Cluster 15 seems to contain Treg (CD4+, Cd8-, Cd25+, Foxp3+)
+
+### Cluster 16
+
+### Cluster 17 
+```{r cluster17,fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd8b1","Trdc","Tcrg-C1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+Cluster 17 seem to contain Tgd DN (CD4-, Cd8-, TCR D+, TCR G+)
+
+### Cluster 18
+```{r,fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
+```
+Dp blast
+
+### Cluster 19
+```{r, fig.width = 15, fig.height = 12}
+FeaturePlot(T.Seurat, features = c("Cd8b1","Sell","Ccl5","Gzma","Klrc1","Ifng","Zeb2","Ly6c2"),ncol = 3,cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+# Zeb2 terminally differentiated CTL
+```
+
+```{r,fig.width = 15, fig.height = 6}
+VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r"))
+```
+
+Cluster 19 seemsto contain CD8 CTL (CD4-, Cd8+, Ccl5+, Sell-, ccr7-,cd127-) & Ly6c2+
+
+### Cluster 20
+```{r,fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
+```
+Seems to be Dp blast
+
+### Cluster 21
+```{r,fig.width = 10, fig.height = 4}
+FeaturePlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
+VlnPlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
+```
+Cluster 21 seem to contain ISP cells (CD4-, Cd8+)
+
+### Cluster 22
+```{r,fig.width = 10, fig.height = 8}
+FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1","Il2ra"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
+Cluster 22 seems to contain DN T cells (CD4-, Cd8-, Cd25+)
+
+### Cluster 23
+```{r,fig.width = 15, fig.height = 3}
+VlnPlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
+VlnPlot(T.Seurat, features = c("Rag1")) #on DP cells mostly (immgen), DP quicient or DP blast (Teichman)
+```
+Seems to be Dp small (Cd4+,Cd8+,Rag1+)
+
+## MYC vs WT
+### Radar plot
+```{r}
+#check genotype proportion in each spleen clusters
+
+df <- as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters),1)*100)))
+df$cluster = rownames(df)
+df2<-as.data.frame(t(cbind(rep(60,11),rep(0,11),df)[,1:6]))
+rownames(df2[1:2,]) <- c("60","0")
+
+#order data frame
+df2 <- df2[c("10,16","19","11","13","17","9","15","12","0,5","4","1")]
+
+radarchart(df2, cglcol="grey", cglty=1 ,cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 ,caxislabels=paste(seq(from = 0,to = 60,by = 15),"%"), axislabcol = "grey40", axistype = 0)
+
+#check genotype proportion in each thymic cluster
+df <-  as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters),1)*100)))
+df$cluster = rownames(df)
+df2<-as.data.frame(t(cbind(rep(65,8),rep(0,8),df)[,1:6]))
+rownames(df2[1:2,]) <- c("65","0")
+
+#order
+df2 <- df2[c("22","17","10,16","6","7","8,2,3,23","20,18,14","21")]
+
+
+radarchart(df2, cglcol="grey", cglty=1,caxislabels=paste(seq(0,70,17.5),"%"), axistype = 0,axislabcol="grey40", cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 )
+```
+### Proportion bar plot
+```{r}
+#thymic proportions
+datathym <- data.frame(prop.table(t(prop.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters),1)),1)*100)
+#order cluster level
+datathym$Var1 <- factor(datathym$Var1, levels = c("22","21","20,18,14","8,2,3,23","7","6","10,16","17"))
+
+cellnumber <- data.frame(colSums(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters)) )
+cellnumber$cluster <- rownames(cellnumber)
+row_order <- c("22","21","20,18,14","8,2,3,23","6","7","17","10,16")
+cellnumber <- cellnumber[row_order,]
+
+Cluster <- datathym$Var1
+HTO <- datathym$Var2
+Percentage <- datathym$Freq
+text <- cellnumber$colSums.table.T.Seurat.thymus.meta.data.HTO..T.Seurat.thymus.meta.data.manualclusters..
+
+cols <- c("Myc- PTEN- thymus" = "#FF99FF", "MYC- thymus" = "coral1", "PTEN- thymus" = "cyan3", "WT thymus" = "chartreuse3")
+
+ggplot(datathym, aes(fill=HTO, y=Percentage, x=Cluster)) + 
+    geom_bar(position="stack", stat="identity", width=0.7)+
+   xlab("Thymic Clusters")+ylab("Percentage")+ theme(legend.position="bottom")+ scale_fill_manual(values =cols, labels=c("Myc Pten","Myc","Pten","WT"))+theme_light()+geom_hline(yintercept=c(25,50,75), linetype="dashed", color = "grey60")+ annotate("text", x = c(1,2,3,4,5,6,7,8), y=103, label = c(paste0(text)))
+
+#splenic proportions
+Idents(T.Seurat.spleen) <- "manualclusters"
+T.Seurat.spleenbar <- subset(T.Seurat.spleen,  idents = c("0,5","9","1","11","19")) #to only keep cluster needed for the plot
+data3 <- data.frame(prop.table(t(prop.table(table(T.Seurat.spleenbar@meta.data$HTO,T.Seurat.spleenbar@meta.data$manualclusters),1)),1)*100)
+
+#order cluster level
+data3$Var1 <- factor(data3$Var1, levels = c("0,5","9","1","11","19"))
+
+cellnumber <- data.frame(colSums(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters)) )
+cellnumber$cluster <- rownames(cellnumber)
+row_order <-c("0,5","9","1","11","19")
+cellnumber <- cellnumber[row_order,]
+
+Cluster <- data3$Var1
+HTO <- data3$Var2
+Percentage <- data3$Freq
+text <- cellnumber$colSums.table.T.Seurat.spleen.meta.data.HTO..T.Seurat.spleen.meta.data.manualclusters..
+# Stacked bar plot
+cols <- c("Myc- PTEN- spleen" = "#FF99FF", "MYC- spleen" = "coral1", "PTEN- spleen" = "cyan3", "WT spleen" = "chartreuse3")
+
+ggplot(data3, aes(fill=HTO, y=Percentage, x=Cluster)) + 
+    geom_bar(position="stack", stat="identity", width=0.7)+
+   xlab("Splenic Clusters")+ylab("Percentage")+ theme(legend.position="bottom")+scale_fill_manual(values =cols, labels=c("Myc Pten","Myc","Pten","WT")) +theme_light()+geom_hline(yintercept=c(25,50,75), linetype="dashed", color = "grey60")+ annotate("text", x = c(1,2,3,4,5), y=103, label = c(text))
+```
+
+### Differential Gene Expression
+#### CD8
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+#DGE between our two CD8 naive clusters
+dgecd8_data <- FindMarkers(T.Seurat, ident.1 = "1", ident.2 = "4",logfc.threshold=0)
+
+# bar plot
+#add abs value to table
+dgecd8_data$abs <- abs(dgecd8_data$avg_logFC) 
+
+dgecd8_data$genename <- rownames(dgecd8_data)
+# Select markers for plotting on a Heatmap 
+markers.use=subset(dgecd8_data, p_val_adj<1e-50 & abs>0.20)
+dfcd8markers <-markers.use[order(markers.use$avg_logFC),]
+
+dfcd8markers$genename <- factor(dfcd8markers$genename, levels = dfcd8markers$genename[order(dfcd8markers$avg_logFC)])
+dfcd8markers$logpval <- log10(dfcd8markers$p_val_adj)
+
+ggplot(dfcd8markers, aes(x = dfcd8markers$genename, y = dfcd8markers$avg_logFC, fill = logpval)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              ylim(-1.2,1.2)+
+                              labs(title="Try dGE") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+                                    axis.ticks = element_blank()) +
+                               scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -120, breaks=c(-52,-120,-200),labels=c("-50","-120","-200"))+coord_flip() # Flip axes
+```
+#### CD4
+```{r}
+#define proportion of genotype in CD4 naive clusters
+T.Seurat.spleen@meta.data$manualHTO = "nothing"
+Idents(T.Seurat.spleen) <- "MULTI_ID"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "MULTI_ID", idents = c("Spleen-ctrl","Spleen-P")),]$manualHTO = "Spleen-ctrl&P"
+T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "MULTI_ID", idents = c("Spleen-M","Spleen-MP")),]$manualHTO = "Spleen-M&MP"
+
+prop.table(t(prop.table(table(T.Seurat.spleen@meta.data$integrated_snn_res.1.8,T.Seurat.spleen@meta.data$manualHTO),1)),2)*100
+#in our CD4 naive clusters (0,5 and 12) the one with most cells from M&MP is 0 and the one with most cells from ctrl&P is 12
+
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+#DGE between 0 and 12
+dgecd4_data <- FindMarkers(T.Seurat, ident.1 = "0", ident.2 = "12",logfc.threshold=0)
+# bar plot
+#add abs value to table
+dgecd4_data$abs <- abs(dgecd4_data$avg_logFC) 
+
+dgecd4_data$genename <- rownames(dgecd4_data)
+# Select markers for plotting on a Heatmap 
+markers.use=subset(dgecd4_data,p_val_adj<1e-10 & abs>0.2)
+dfcd4markers <-markers.use[order(markers.use$avg_logFC),]
+
+dfcd4markers$genename <- factor(dfcd4markers$genename, levels = dfcd4markers$genename[order(dfcd4markers$avg_logFC)])
+dfcd4markers$logpval <- log10(dfcd4markers$p_val_adj)
+
+ggplot(dfcd4markers, aes(x = dfcd4markers$genename, y = dfcd4markers$avg_logFC, fill = logpval)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              ylim(-1.2,1.2)+
+                              labs(title="Try dGE CD4") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+                                    axis.ticks = element_blank()) +
+                               scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -40, breaks=c(-12,-40,-57),labels=c("-10","-40","-60"))+ coord_flip() # Flip axes
+```
+
+### Functional profil analysis (Gene Ontology)
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+
+# get all gene name express in our cells as background
+background <- T.Seurat@assays$RNA@meta.features
+backgroundrow <- rownames(background)
+```
+
+#### Naive CD8 T cells
+```{r}
+#DGE between our two CD8 naive clusters
+#dgecd8_data <- FindMarkers(T.Seurat, ident.1 = "1", ident.2 = "4",logfc.threshold=0)
+#upreg_cd8 <- subset(dgecd8_data, avg_logFC>0)
+#downreg_cd8 <- subset(dgecd8_data, avg_logFC<0.2 & p_val_adj<1e-50)
+#genecomprow <- rownames(downreg_cd8)
+
+
+#### TO SUPPRESS FOR FINAL
+#write.table(genecomprow,file="/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/cluster1v4.txt",sep="\t",quote=F)
+genecomprow <- read.table("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/cluster1v4.txt", sep = "\t")
+genecomprow$x = as.character(genecomprow$x)
+genecomprow <- genecomprow[,1]
+####
+
+CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
+head (CPenrich)
+
+dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count") #+ coord_flip()+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+emapplot(CPenrich, showCategory = 50)
+```
+
+#### Naive CD4 T cells
+```{r}
+#DGE between our two most control and Myd del CD4 naive clusters
+#dgecd4_data <- FindMarkers(T.Seurat, ident.1 = "0", ident.2 = "12",logfc.threshold=0)
+#downreg_cd4 <- subset(dgecd4_data, avg_logFC<0& p_val_adj<1e-20)
+#genecomprow <- rownames(downreg_cd4)
+
+
+#### TO SUPPRESS FOR FINAL
+#write.table(genecomprow,file="/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/cluster0vs12.txt",sep="\t",quote=F)
+genecomprow <- read.table("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/cluster0vs12.txt", sep = "\t")
+genecomprow$x = as.character(genecomprow$x)
+genecomprow <- genecomprow[,1]
+####
+
+
+CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
+
+dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count")+ scale_y_discrete(labels=function(x)str_wrap(x, width=40))
+```
+
+### eYFP negative investigation
+Deciphering what are our eYFP negative cells on effector and memory CD8 T cells
+
+Heatmap : 
+```{r}
+# On cluster 11 - cd8 memory
+C11Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11Ctrl])
+C11Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11Pt])
+C11MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11MP])
+C11M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11M])
+#on cluster 19 - cd8 eff term
+C19Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19Ctrl])
+C19Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19Pt])
+C19MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19MP])
+C19M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19M])
+#on cluster 1
+C1Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1Ctrl])
+C1Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1Pt])
+C1MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1MP])
+C1M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1M])
+
+
+l1 <- c("1","1","1","1","11","11","11","11","19","19","19","19")
+l2 <- c("Ctrl","Pten","Myc","MycPten","Ctrl","Pten","Myc","MycPten","Ctrl","Pten","Myc","MycPten")
+l3 <- c(mC1Ctrl,mC1Pt,mC1M,mC1MP,mC11Ctrl,mC11Pt,mC11M,mC11MP,mC19Ctrl,mC19Pt,mC19M,mC19MP)
+
+tableauYFP <- data.frame(Cluster = l1, Genotypes =l2) 
+tableauYFP <- cbind(tableauYFP,Values = l3)
+
+
+tableauYFP$Cluster <- factor(tableauYFP$Cluster,levels = c("1","11","19"))
+tableauYFP$Genotypes <- factor(tableauYFP$Genotypes,levels = c("MycPten","Myc","Pten","Ctrl"))
+```
+
+```{r}
+ggplot(tableauYFP, aes(x = Cluster, Genotypes)) +
+        geom_tile(aes(fill = Values)) +
+        scale_fill_gradient2( mid='yellow', high='red',limits=c(0,max(tableauYFP$Values)))+ theme_classic(base_size=20)
+```
+
+eYFP neagtive are coming from Myc and Myc Pten del mice
+
+```{r}
+#DOT plot eyFP and TGD on CD8 effector and memory
+Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+CD8sub <- subset(T.Seurat.spleen, idents = c("11","19","13"))
+Idents(CD8sub) <- "MULTI_ID"
+CD8sub@active.ident <- factor(CD8sub@active.ident,levels=c("Spleen-M","Spleen-MP","Spleen-ctrl","Spleen-P"))
+levels(CD8sub)
+```
+
+```{r}
+DotPlot(CD8sub, dot.scale = 8,features = c("Tcrg-C1","Trdc","Trbc2","Trac","eYFP") ) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red")+ ggtitle("CD8 memory and effector clusters")
+```
+eyFP negative are coming from Myc and Myc Pten del mice and are Tgd cells.
+
+#Session Info
+```{r}
+sessionInfo()
+```

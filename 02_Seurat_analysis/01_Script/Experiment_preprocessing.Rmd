@@ -7,6 +7,15 @@ output: html_document
 #to do before publish
 ```{r}
 #change all path to data showing my environment (NAS...) mettre lien à partir de Workspace ou il dowloaderont les fichier source (fastq et objet R)
+#ajouter un test pour etre sur que y'ai subset 1 et 2 et pas que un des deux 
+
+#do we want to show the code in rmd ? 
+
+# GO mise en ligne des fichier brut
+
+#test final sans aucun objet, avec le premier obj et avec le deuxieme
+
+#change output path
 ```
 
 
@@ -14,53 +23,61 @@ output: html_document
 ```{r env_loading, include=FALSE}
 # Load packages, data and functions
 library(Seurat)
-#library(plotly)
+library(plotly)
 library(kableExtra)
 library(ggplot2)
-#library(ggrepel)
-#install.packages("tidyr")
-#library("tidyr")
-#install.packages("ggthemes")
-#library(ggthemes)
-#library(scales)
-#install.packages("fmsb")
-#library(fmsb)
+library(gridExtra)
 
 #Path to the analysis folder
-WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/"
+WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_repo/"
 # Path to the folder containing scripts used in the analysis
 CWD <- "/home/nozaism/Workspace/Function_delphine/" 
 # Load the R scripts containing the functions used in the analysis
 source(paste(CWD, "Workflow_functions_S3.R", sep="/"))
 #  Path to the folder that will contain output objects
-OUTPUT_PATH <- (paste0(WORKSPACE,"Output/"))
+#OUTPUT_PATH <- (paste0(WORKSPACE,"02_Seurat_analysis/02_Output/"))
+OUTPUT_PATH <- ("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Output_repo/")
 # Set the random number seed
 set.seed(1234)
 # Resolution parameter for Seurat clustering
 RESOLUTION <- 1
+```
 
+```{r, echo=FALSE,results='asis'}
 SAMPLE1 <- "181031"
 SAMPLE2 <- "190211"
 
 if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))){
 print("You are starting the analysis from count matrix blabla ..")
-do <- TRUE
-}else{
-print ("You are starting analysis from Robj blabla ..")
-do <- FALSE
+part1 <- TRUE #experiment one by one
+part2 <- TRUE #merging 2 object
+}else if( file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))){
+print("You already have the final object, you can now lauch the analysis")
+part1 <- FALSE
+part2 <- FALSE
+}else{ 
+print ("You are starting analysis from our two Robj blabla ..")
+part1 <- FALSE
+part2 <- TRUE
+part3 <- TRUE
 }
 
 ```
 
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 # Loading the first experiment
-```{r path1_loading, include=FALSE,eval=(do == TRUE )}
+```
+
+
+```{r path1_loading, include=FALSE,eval=(part1 == TRUE )}
 # Load path for files
 PATH_MOUSE_DATA1 <- "/mnt/NAS6/BNlab/Saran/Rerun_CellRanger/MYC_PTEN_01_mm10/outs/filtered_feature_bc_matrix/"
 PROJECT_NAME1 <- paste("10X_", SAMPLE1, sep = "")
 PATH_HTO_DATA1 <- "/mnt/NAS5/BNlab/delphine/barecoded_scRNAseq/MYC_PTEN/CITE-seq-count_181031_Result_hd2/umi_count/"
 ```
 
-```{r Sample1_loading, include=FALSE,eval=(do == TRUE)}
+```{r Sample1_loading, include=FALSE,eval=(part1 == TRUE)}
 # Create Seurat object and apply filtering   
 # Read 10X data
 mouse_data1 <- Read10X(data.dir = PATH_MOUSE_DATA1)
@@ -69,7 +86,7 @@ mouse_data1 <- Read10X(data.dir = PATH_MOUSE_DATA1)
 Not_processed_Seurat_m1 <- CreateSeuratObject(counts = mouse_data1, min.cells = 3, min.features = 200, project = "181031")
 ```
 
-```{r HTO1_loading, include=FALSE,eval=(do == TRUE)}
+```{r HTO1_loading, include=FALSE,eval=(part1 == TRUE)}
 # Load in the UMI matrix
 umi_sparse1 <- GetAssayData(object = Not_processed_Seurat_m1, slot = "counts")
 
@@ -90,8 +107,12 @@ hto1 <- as.matrix(hto1[,joint_bcs1])
 print (rownames(hto1))
 ```
 
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 Looking to HTO distribution accross sample :
-```{r HTO distribution,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r HTO distribution,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 #HTO distribution
 par(mfrow=c(1,1))
 par(las=2)
@@ -100,7 +121,7 @@ barplot(rowSums(hto1), main = "sequenced HTO distribution", horiz=TRUE)
 rowSums(hto1)
 ```
 
-```{r, message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Setup seurat object and add in the hto data
 # Setup Seurat object
 hashtag1 <- CreateSeuratObject(counts = umi_sparse1[,joint_bcs1], assay = "RNA", project = "181031")
@@ -108,11 +129,11 @@ hashtag1 <- CreateSeuratObject(counts = umi_sparse1[,joint_bcs1], assay = "RNA",
 # Normalize RNA data with log normalization
 hashtag1 <- NormalizeData(hashtag1,display.progress = FALSE)
 # Find and scale variable genes
-hashtag1 <- FindVariableFeatures(hashtag1, do.plot = F, selection.method = "vst", nfeatures = 2000, display.progress = FALSE)
+hashtag1 <- FindVariableFeatures(hashtag1, part1.plot = F, selection.method = "vst", nfeatures = 2000, display.progress = FALSE)
 hashtag1 <- ScaleData(hashtag1,genes.use = hashtag1@var.features,display.progress = FALSE)
 ```
 
-```{r, message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Adding HTO data as an independent assay
 
 # Add HTO data as a new assay independent from RNA
@@ -122,8 +143,13 @@ hashtag1 <- SetAssayData(hashtag1,assay = "HTO",slot = "counts",new.data = hto1)
 hashtag1 <- NormalizeData(hashtag1, assay = "HTO",normalization.method = "CLR",display.progress = FALSE)
 ```
 
-Demultiplexing HTO
-```{r Demultiplexing, message=FALSE, include=FALSE,eval=(do == TRUE)}
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
+# Demultiplexing HTO
+```
+
+
+```{r Demultiplexing, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 #Demultiplex cells based on HTO enrichment
 #Run HTOdemux just to get the HTOmax_ID fied
 hashtag1 <- HTODemux(hashtag1, assay = "HTO", positive.quantile = 0.99, verbose = FALSE)
@@ -131,26 +157,43 @@ hashtag1 <- HTODemux(hashtag1, assay = "HTO", positive.quantile = 0.99, verbose 
 hashtag1 <- MULTIseqDemux(hashtag1, assay = "HTO",autoThresh = TRUE, maxiter = 10,qrange = seq(from = 0.1, to = 0.9, by = 0.05), verbose = TRUE)
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ##Demultiplexing results {.tabset}
+```
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ###Cells classification
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 print (table(hashtag1@meta.data$MULTI_ID))
 ```
 
-### Violinplot (features)
 
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
+### Violinplot (features)
+```
+
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 VlnPlot(hashtag1,features = c("nFeature_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### Violinplot (HTO counts)
+```
 
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 VlnPlot(hashtag1,features = c("nCount_HTO"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ## tSNEs based on HTO
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 # Calculate a distance matrix using HTO
 hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = hashtag1, assay = "HTO"))))
 
@@ -158,13 +201,16 @@ hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = hashtag1, assay = "HTO"))
 hashtag1 <- RunTSNE(hashtag1, distance.matrix = hto.dist.mtx, perplexity = 100)
 ```
 
-```{r, message=FALSE,echo=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE,echo=FALSE,eval=(part1 == TRUE)}
 DimPlot(hashtag1, group.by = "MULTI_ID",reduction = "tsne")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### HTO margin
+```
 
-```{r, fig.width = 8, fig.height = 7, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+
+```{r, fig.width = 8, fig.height = 7, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 Tsne<-data.frame(
   tSNE_1 = hashtag1@reductions$tsne@cell.embeddings[,1],
   tSNE_2= hashtag1@reductions$tsne@cell.embeddings[,2],
@@ -177,16 +223,22 @@ Min=min(hashtag1@meta.data$HTO_margin)
 ggplot(Tsne,aes(x=tSNE_1,y=tSNE_2))+geom_point(aes(color=gene,shape=HTO))+
            scale_colour_gradient2(low = "blue",mid="orange",high="red",name="HTO margin",midpoint=(Max+Min)/2)+scale_shape_manual(values = c(15,16,17,18,19,20,21,22,23,24,25))
 ```
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### Ridge plots
 
 **Visualize enrichment for selected HTOs with ridge plots**
-```{r, fig.height = 4, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+
+```{r, fig.height = 4, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 RidgePlot(hashtag1, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[1:2],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag1, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[3:4],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag1, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[5:6],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag1, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[7:8],ncol = 2, group.by = "MULTI_ID")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 ## Sample Information
 
 The analysis will be run on the sample 1 (181031).
@@ -198,8 +250,9 @@ Here are the description of those parameters in the Seurat *CreateSeuratObject* 
 * min.cells: Include genes with detected expression in at least 3 cells
 
 After those filters, the remaining cell number is **`r length(colnames(hashtag1@assays$RNA@data))**.
+```
 
-```{r doublet_negative_removal, results='asis',eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{r doublet_negative_removal, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 #add Exp1 cell identity
 HTO_cr1 <- row.names(subset(hashtag1@meta.data, MULTI_ID == "Spleen-ctrl" ))
 HTO_ct1 <- row.names(subset(hashtag1@meta.data, MULTI_ID == "Thymus-ctrl" ))
@@ -222,9 +275,12 @@ clean.subset1 <- subset(x = hashtag1, cells = HTO_identified1)
 VlnPlot(clean.subset1,features = c("nFeature_RNA", "nCount_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 After removing doublets and negative cells, the remaining cell number is **`r length(colnames(clean.subset1@assays$RNA@data))**.
+```
 
-```{r processing_1, include=FALSE,eval=(do == TRUE)}
+
+```{r processing_1, include=FALSE,eval=(part1 == TRUE)}
 # OBJECT ONE SAVE
 
 if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))){
@@ -281,20 +337,31 @@ if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, "
 }
 ```
 
-## Mitochondrial percentage versus nFeatures
 
-```{r mito_vs_nfeatures,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
+## Mitochondrial percentage versus nFeatures
+```
+
+```{r mito_vs_nfeatures,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 df<-data.frame(multi.id=Seurat1@misc$old_meta_data$MULTI_ID,percent.mito=Seurat1@misc$old_meta_data$percent.mito,nFeature_RNA=Seurat1@misc$old_meta_data$nFeature_RNA)
 ggplotly(ggplot(df,aes(x=nFeature_RNA,y=percent.mito,color=multi.id))+geom_point())
 ```
 
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ## UMAP
-```{r UMAP_HTO_seurat_1,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r UMAP_HTO_seurat_1,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 ggplotly(DimPlot(Seurat1, reduction = "umap", group.by = "MULTI_ID", do.label = TRUE, pt.size = 1))
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 # Loading the second experiment
-```{r path2_loading, include=FALSE,eval=(do == TRUE)}
+```
+
+
+```{r path2_loading, include=FALSE,eval=(part1 == TRUE)}
 # Load path for files
 PATH_MOUSE_DATA2 <- "/mnt/NAS6/BNlab/Saran/Rerun_CellRanger/MYC_PTEN_02_mm10/outs/filtered_feature_bc_matrix/"
 PROJECT_NAME2 <- paste("10X_", SAMPLE2, sep = "")
@@ -302,7 +369,7 @@ PATH_HTO_DATA2 <- "/mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_1902
 PATH_ADT_DATA2 <- "/mnt/NAS5/BNlab/delphine/barecoded_scRNAseq/MYC_PTEN2/CITE-seq-count141_190211_ADT-Result_hd2/umi_count"
 ```
 
-```{r Sample_loading_2, include=FALSE,eval=(do == TRUE)}
+```{r Sample_loading_2, include=FALSE,eval=(part1 == TRUE)}
 # Create Seurat object and apply filtering   
 # Read 10X data
 mouse_data2 <- Read10X(data.dir = PATH_MOUSE_DATA2)
@@ -312,7 +379,7 @@ mouse_data2 <- Read10X(data.dir = PATH_MOUSE_DATA2)
 Not_processed_Seurat_m2 <- CreateSeuratObject(counts = mouse_data2, min.cells = 3, min.features = 200, project = "190211")
 ```
 
-```{r , message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r , message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 # Load in the UMI matrix
 umi_sparse2 <- GetAssayData(object = Not_processed_Seurat_m2, slot = "counts")
 
@@ -330,7 +397,7 @@ hto2 <- as.matrix(hto2[,joint_bcs2])
 print (rownames(hto2))
 ```
 
-```{r,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{r,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 par(mfrow=c(1,1))
 par(las=2)
 par(mar=c(5,15,3,3))
@@ -339,7 +406,7 @@ barplot(rowSums(hto2), main = "sequenced HTO distribution", horiz=TRUE)
 rowSums(hto2)
 ```
 
-```{r, message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Setup seurat object and add in the hto data
 # Setup Seurat object
 hashtag2 <- CreateSeuratObject(counts = umi_sparse2[,joint_bcs2 ], assay = "RNA", project = "190211")
@@ -351,7 +418,7 @@ hashtag2 <- FindVariableFeatures(hashtag2,do.plot = F,selection.method = "vst", 
 hashtag2 <- ScaleData(hashtag2,genes.use = hashtag2@assays$RNA@var.features,display.progress = FALSE)
 ```
 
-```{r, message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Adding HTO data as an independent assay
 # Add HTO data as a new assay independent from RNA
 hashtag2[["HTO"]] <- CreateAssayObject(counts = hto2)
@@ -360,32 +427,46 @@ hashtag2 <- SetAssayData(hashtag2,assay = "HTO",slot = "counts",new.data = hto2)
 hashtag2 <- NormalizeData(hashtag2, assay = "HTO",normalization.method = "CLR",display.progress = FALSE)
 ```
 
-```{r, message=FALSE, include=FALSE,eval=(do == TRUE)}
+```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 #Run HTOdemux just to get the HTO_maxID field
 hashtag2 <- HTODemux(hashtag2, assay = "HTO", positive.quantile = 0.99, verbose = FALSE)
 #Demultiplex cells based on HTO enrichment
 hashtag2 <- MULTIseqDemux(hashtag2, assay = "HTO",autoThresh = TRUE, maxiter = 10,qrange = seq(from = 0.1, to = 0.9, by = 0.05), verbose = TRUE)
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ##Demultiplexing results {.tabset}
+```
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ###Cells classification
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 print (table(hashtag2@meta.data$MULTI_ID))
 ```
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### Violinplot (features)
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 VlnPlot(hashtag2,features = c("nFeature_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
-
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### Violin plots (HTO counts)
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 VlnPlot(hashtag2,features = c("nCount_HTO"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
-
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ## tSNEs based on HTO
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 # Calculate a distance matrix using HTO
 hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = hashtag2, assay = "HTO"))))
 
@@ -393,13 +474,16 @@ hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = hashtag2, assay = "HTO"))
 hashtag2 <- RunTSNE(hashtag2, distance.matrix = hto.dist.mtx, perplexity = 100)
 ```
 
-```{r, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 DimPlot(hashtag2, group.by = "MULTI_ID")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### HTO margin
+```
 
-```{r, fig.width = 8, fig.height = 7, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+
+```{r, fig.width = 8, fig.height = 7, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 Tsne<-data.frame(
   tSNE_1 = hashtag2@reductions$tsne@cell.embeddings[,1],
   tSNE_2= hashtag2@reductions$tsne@cell.embeddings[,2],
@@ -414,16 +498,21 @@ ggplot(Tsne,aes(x=tSNE_1,y=tSNE_2))+geom_point(aes(color=gene,shape=HTO))+
            scale_colour_gradient2(low = "blue",mid="orange",high="red",name="HTO margin",midpoint=(Max+Min)/2)+scale_shape_manual(values = c(15,16,17,18,19,20,21,22,23,24,25))
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ### Ridge plots
 
 **Visualize enrichment for selected HTOs with ridge plots**
+```
 
-```{r, fig.height = 4, message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+
+```{r, fig.height = 4, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 RidgePlot(hashtag2, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[1:2],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag2, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[3:4],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag2, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[5:6],ncol = 2, group.by = "MULTI_ID")
 RidgePlot(hashtag2, assay = "HTO", features = rownames(GetAssayData(hashtag1,assay = "HTO"))[7:8],ncol = 2, group.by = "MULTI_ID")
 ```
+
+```{asis, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 
 ## Sample Information
 
@@ -436,9 +525,10 @@ Used parameters in the Seurat *CreateSeuratObject* function:
 * min.cells: 200 . Include genes with detected expression in at least 200 cells
 
 After those filters, the remaining cell number is **`r length(colnames(hashtag2@assays$RNA@data))**.
+```
 
 
-```{r cell_select_2, results='asis',eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{r cell_select_2, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 #add Exp2 cell identity
 HTO_cr2 <- row.names(subset(hashtag2@meta.data, MULTI_ID == "Spleen-ctrl" ))
 HTO_ct2 <- row.names(subset(hashtag2@meta.data, MULTI_ID== "Thymus-ctrl" ))
@@ -460,10 +550,17 @@ clean.subset2 <- subset(x = hashtag2, cells = HTO_identified2)
 VlnPlot(clean.subset2,features = c("nFeature_RNA", "nCount_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
-After removing doublets and negative cells, the remaining cell number is **`r length(colnames(clean.subset2@assays$RNA@data))**.
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
+After removing doublets and negative cells, the remaining cell number is **`r length(colnames(clean.subset2@assays$RNA@data))**.
+```
+
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ## Adding ADT
-```{r load_adt,  message=FALSE,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+
+```{r load_adt,  message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 # Load in the UMI matrix
 umi <- GetAssayData(object = clean.subset2, slot = "counts")
 
@@ -497,12 +594,16 @@ clean.subset2 <- NormalizeData(clean.subset2, assay = "ADT", normalization.metho
 clean.subset2 <- ScaleData(clean.subset2, assay = "ADT")
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ADT list :
-```{r , results='asis',eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```
+
+
+```{r , results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 print (rownames(adt))
 ```
 
-```{r Significant_PC, include=FALSE,eval=(do == TRUE)}
+```{r Significant_PC, include=FALSE,eval=(part1 == TRUE)}
 # Traitement de l'objet
 if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))){
   #1- QC 
@@ -557,34 +658,45 @@ if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, "
 }
 ```
 
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
 ## Mitochondrial percentage versus nFeatures
+```
 
-```{r mito_vs_nfeatures2,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{r mito_vs_nfeatures2,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 df<-data.frame(multi.id=Seurat2@misc$old_meta_data$MULTI_ID,percent.mito=Seurat2@misc$old_meta_data$percent.mito,nFeature_RNA=Seurat2@misc$old_meta_data$nFeature_RNA)
 ggplotly(ggplot(df,aes(x=nFeature_RNA,y=percent.mito,color=multi.id))+geom_point())
 ```
 
-## UMAP
-```{r UMAP_HTO_seurat_2,eval=(do == TRUE ), echo=if (do) TRUE else FALSE}
+```{asis, eval=(part1 == TRUE ), echo=TRUE}
+## UMAP:
+```
+
+```{r UMAP_HTO_seurat_2,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 ggplotly(DimPlot(Seurat2, reduction = "umap", group.by = "MULTI_ID", do.label = TRUE, pt.size = 1))
 ```
 
 
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 #Merging our two experiments
+```
 
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 ## Load separate R object
 You can load objects done with the code above.
 Or our object ?? (link )
+```
 
-```{r Samples_loading, include=FALSE}
+```{r Samples_loading,eval=(part2 == TRUE ) ,include=FALSE}
 #load all seurat objects built previously
 load(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))
 load(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))
 ```
 
-
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 ## Integrating the 2 seurat objects with seurat integration (cca)
-```{r, CCA, message=FALSE}
+```
+
+```{r, CCA, eval=(part2 == TRUE ),include=FALSE}
 # Gene selection for input to CCA
 FindVariableFeatures(object = Seurat1, 
         selection.method = "vst", nfeatures = 2000, verbose = FALSE)
@@ -601,7 +713,11 @@ exp1.2.integrated <- IntegrateData(anchorset = exp.anchors, features.to.integrat
 ```
 
 
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 We identified **`r length(gene1)`** expressed in sample1 and **`r length(gene2)`** expressed in sample2. **`r length(common_genes)`** are in common in this two set and will the integrated in the merged and corrected object.
+
+
+## UMAP:
 
 # Analysis part
 
@@ -615,7 +731,9 @@ Here are the description of those parameters in the Seurat *CreateSeuratObject* 
 * min.genes: Include cells where at least this many genes are detected
 * min.cells: Include genes with detected expression in at least this many cells
 
-```{r filters, results='asis'}
+```
+
+```{r filters, eval=(part2 == TRUE ),results='asis',include=FALSE}
 # Affiche les parametres
 Filter_parameters <- data.frame()
 Filter_parameters["Value", "min.cells"] <- 3
@@ -623,10 +741,14 @@ Filter_parameters["Value", "min.genes"] <- 200
 kable(Filter_parameters, "html", align = "c") %>% kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 After those filters, and merging MYC_PTEN_01 and MYC_PTEN02 the remaining cell number is **`r length(colnames(exp1.2.integrated))`**.
+```
 
 
-```{r cell_select, results='asis'}
+
+```{r cell_select,eval=(part2 == TRUE ), results='asis',include=FALSE}
 ### add Exp1 cell identity (181031)
 #add Exp1 cell identity
 HTO_cr6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Spleen-ctrl" )),"_2"),colnames(x = exp1.2.integrated))
@@ -679,8 +801,11 @@ VlnPlot(exp1.2.integrated,features = "nFeature_RNA",pt.size = 0.1, log = TRUE,  
 Seurat <- exp1.2.integrated
 ```
 
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
 ## UMAP and clustering parameter
-```{r Significant_PC_merge, include=FALSE}
+```
+
+```{r Significant_PC_merge, eval=(part2 == TRUE ),include=FALSE}
 # Traitement de l'objet
 if(! file.exists(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))){
   
@@ -724,3 +849,147 @@ if(! file.exists(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))){
   load(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))
 }
 ```
+
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+## Merge checking {.tabset}
+### HTO
+```
+
+```{r,eval=(part2 == TRUE ), echo=FALSE}
+ggplotly(DimPlot(Seurat, reduction = "umap", group.by = "HTO", do.label = TRUE, pt.size = 1)+
+           ggtitle("UMAP colorred by HTO classification"))
+```
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+### Orig.idents
+```
+
+```{r, eval=(part2 == TRUE ),echo=FALSE}
+ggplotly(DimPlot(Seurat, reduction = "umap", group.by = "orig.ident", do.label = TRUE, pt.size = 1))
+```
+
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+## T-cell selection {.tabset}
+According to T-cell markers we will exclude Cd3d low clusters: 13 (Bcells), 11, 14, 17 (monocytes/macrophages).
+According to T-cell markers we will exclude Cd3d/Cd3e low clusters: 11 (Bcells), 13, 17, 18, 19 (monocytes/macrophages), 16, 14 (ILC/NK).
+
+### Known RNA B and T markers
+```
+
+```{r bt_markers_checking, eval=(part2 == TRUE ), echo=FALSE}
+DimPlot(Seurat, label = T)
+bcell_known_markers <- c("Cd74","Ms4a1","Cd19","Cd3d")
+FeaturePlot(object = Seurat, features = bcell_known_markers, reduction = "umap",  cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+bcell_known_markers <- c("Cd14","Fcgr3","Trdc","Cd3d")
+FeaturePlot(object = Seurat, features = bcell_known_markers, reduction = "umap",  cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(object = Seurat, features = c("Il2ra","Klrg1","Il7r","Rora"), reduction = "umap", order = TRUE, cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(object = Seurat, features = c("Eomes","Ncr1","Tbx21","Kit"), reduction = "umap", order = TRUE, cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#Nrc1 = NK
+#IL7R to separate ILC from NK; IL7R+ EOMES+ should be ILC1; EOMES+ IL7R- should be NK
+
+#comparison between marker and cluster position
+ggplotly(DimPlot(Seurat, reduction = "umap", do.label = TRUE, pt.size = 1))
+```
+
+```{r Tcell_selection, eval=(part2 == TRUE ),echo=FALSE}
+#remove cluster 11,12,13,17 (#Bcells & macrophages)
+T.Seurat <- subset(x = Seurat, idents = c("11","13","14","16","17","18","19"), invert = TRUE)
+```
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+## re clustering
+```
+
+```{r, include=FALSE, eval=(part2 == TRUE )}
+# Traitement de l'objet
+if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset_", ".Robj"))){
+  # Selection was already done at the integration step, even after resubsetting it is worth to reselect (https://github.com/satijalab/seurat/issues/1528). RNA should be used, but then batch is back, subsetting before integration is not good neither (better to keep cells that can be aligned)... 
+  
+  T.Seurat <- ScaleData( object =  T.Seurat, 
+                      assay="integrated",
+                      verbose = FALSE,
+                      #do.scale = FALSE,
+                      do.center = TRUE)
+  
+  T.Seurat <- RunPCA(object = T.Seurat, features = VariableFeatures(T.Seurat), npcs = 100, seed.use = 1234, verbose = FALSE)
+  
+  ElbowPlot(T.Seurat, ndims = 50, reduction = "pca")
+  
+  # Scorer les genes pour les composantes
+  T.Seurat <- ProjectDim(object = T.Seurat,
+                  nfeatures.print = 20,
+                  dims.print = 1:10)
+  
+  T.Seurat <- FindNeighbors(object = T.Seurat,
+                  assay = "integrated",
+                  dims = 1:18 , 
+                  verbose = FALSE)#, 
+                  #force.recalc = TRUE, 
+                  #reduction = "pca")
+  
+    T.Seurat <- FindClusters(object = T.Seurat, 
+                  assay = "integrated",
+                  resolution = 1.8,
+                  verbose = FALSE,
+                  random.seed = 1234)
+  #To make the UMAP
+  #######################
+  T.Seurat <- RunUMAP(object = T.Seurat, reduction = "pca", seed.use = 1234, dims = 1:18)
+  
+  DimPlot(object = T.Seurat, reduction = "umap", group.by = "orig.ident")
+  p1 <- DimPlot(object = T.Seurat, reduction = "umap", group.by = "orig.ident")
+  p2 <- DimPlot(object = T.Seurat, reduction = "pca", group.by = "orig.ident", 
+      label = TRUE, repel = TRUE) + NoLegend()
+  
+  grid.arrange(p1,p2,nrow = 1, ncol =2, newpage=TRUE)
+
+  save(T.Seurat, file = paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset", ".Robj"))
+}else{
+  load(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset", ".Robj"))
+}
+
+```
+
+```{r , eval=(part2 == TRUE ),echo=FALSE}
+### add Exp2 cell identity (190211) 
+spleen.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-P" )))
+
+thymus.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-P" )))
+
+T.Seurat@meta.data$tissue = "nothing"
+T.Seurat@meta.data[spleen.cells,]$tissue = "Spleen"
+T.Seurat@meta.data[thymus.cells,]$tissue = "Thymus"
+
+DimPlot(T.Seurat)
+```
+
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+## T-cell umaps {.tabset}
+### HTO
+```
+
+```{r, eval=(part2 == TRUE ),echo=FALSE}
+ggplotly(DimPlot(T.Seurat, group.by = "MULTI_ID"))
+```
+
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+### clustering
+```
+
+```{r, eval=(part2 == TRUE ),echo=FALSE}
+(DimPlot(T.Seurat, reduction = "umap", group.by = "integrated_snn_res.1.8", label = TRUE, pt.size = 1))
+```
+
+```{asis, eval=(part2 == TRUE ), echo=TRUE}
+### END OF PREPROCESSING
+We obtain the final object with clustering to start the analysis
+```
+
+```{r}
+sessionInfo()
+```
+

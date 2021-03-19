@@ -1,0 +1,122 @@
+---
+title: "Figure"
+author: "Mathis"
+date: "2/5/2021"
+output: html_document
+---
+
+Code to obtain all plot necessary to produce our figures :
+
+Load all object
+
+```{r}
+# Highlight specific HTO  6x4
+Idents(T.Seurat) <- "MULTI_ID"
+cellM <- WhichCells(T.Seurat, idents = c("Spleen-M","Thymus-M") )
+DimPlot(T.Seurat,cells.highlight = cellM,sizes.highlight = 0.5,cols = "grey80", cols.highlight = "coral2",pt.size = 0.5)+ NoLegend()+NoAxes()
+
+cellctrl <- WhichCells(T.Seurat, idents = c("Spleen-ctrl","Thymus-ctrl") )
+DimPlot(T.Seurat,cells.highlight = cellctrl,sizes.highlight = 0.5,cols = "grey80", cols.highlight="chartreuse4",pt.size = 0.5)+ NoLegend()+NoAxes()
+
+cellMP <- WhichCells(T.Seurat, idents = c("Spleen-MP","Thymus-MP") )
+DimPlot(T.Seurat,cells.highlight = cellMP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="#CC0099",pt.size = 0.5)+ NoLegend()+NoAxes()
+
+cellP <- WhichCells(T.Seurat, idents = c("Spleen-P","Thymus-P") )
+DimPlot(T.Seurat,cells.highlight = cellP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="deepskyblue3",pt.size = 0.5)+ NoLegend()+NoAxes()
+```
+
+```{r}
+#thymus vs rate figure
+DimPlot(T.Seurat, group.by = "tissue",cols=c("darkgoldenrod1","darkred"),pt.size = 0.5)+ NoLegend()+NoAxes()
+```
+
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+umapcols <- c("#99A6E7","#E3B1D6","#F78754","#F94A17","#CC79B7","#6477D8","#919296","#CF063A","#FEA981","#55AC7C","#5F4090","#D13A7C","#1332D0","#EC0067","#FB710D","#09B329","#B23ACE","#7A1E45","#FB920D","#FF35AC","#FBAF0D","#ECB90C","#FFDA0D","#E22611")
+
+
+DimPlot(T.Seurat, reduction = "umap", group.by = "integrated_snn_res.1.8", pt.size = 1,cols = umapcols)+ NoLegend()
+```
+
+## Dot plot thymus
+```{r}
+Idents(T.Seurat.thymus) <- "manualclusters"
+T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20,18,14","8,2,3,23","7","6","10,16","17"))
+levels(T.Seurat.thymus)
+
+DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55"))
+
+```
+## Dot plot spleen
+```{r}
+Idents(T.Seurat.spleen) <- "manualclusters"
+
+T.Seurat.spleen@active.ident <- factor(T.Seurat.spleen@active.ident,levels=c("10,16","1","4","0,5","12","15","9","17","13","11","19"))
+DotPlot(T.Seurat.spleen, dot.scale = 8, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55")) + coord_flip()
+```
+
+## Myc shift
+### Radar plot
+```{r}
+#check genotype proportion in each spleen clusters
+
+df <- as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters),1)*100)))
+df$cluster = rownames(df)
+df2<-as.data.frame(t(cbind(rep(60,11),rep(0,11),df)[,1:6]))
+rownames(df2[1:2,]) <- c("60","0")
+
+#order data frame
+df2 <- df2[c("10,16","19","11","13","17","9","15","12","0,5","4","1")]
+
+radarchart(df2, cglcol="grey", cglty=1 ,cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 ,caxislabels=paste(seq(from = 0,to = 60,by = 15),"%"), axislabcol = "grey40", axistype = 0)
+
+#check genotype proportion in each thymic cluster
+df <-  as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters),1)*100)))
+df$cluster = rownames(df)
+df2<-as.data.frame(t(cbind(rep(65,8),rep(0,8),df)[,1:6]))
+rownames(df2[1:2,]) <- c("65","0")
+
+#order
+df2 <- df2[c("22","17","10,16","6","7","8,2,3,23","20,18,14","21")]
+
+
+radarchart(df2, cglcol="grey", cglty=1,caxislabels=paste(seq(0,70,17.5),"%"), axistype = 0,axislabcol="grey40", cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 )
+```
+
+#Supplementary
+
+```{r}
+#Dot plot identif thymus et spleen sans cluster regroupé
+
+## Dot plot thymus
+## Setting thymic cluster order
+Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
+T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20","18","14","8","2","3","23","7","6","10","16","17"))
+levels(T.Seurat.thymus)
+
+DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55"))
+
+## Dot plot spleen
+## Setting splenic cluster order 
+Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+T.Seurat.spleen@active.ident <- factor(T.Seurat.spleen@active.ident,levels=c("10","16","1","4","0","5","12","15","9","17","13","11","19"))
+
+
+DotPlot(T.Seurat.spleen, dot.scale = 8, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  panel.background = element_rect(fill = "grey65",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "grey55")) + coord_flip()
+```
