@@ -1,4 +1,4 @@
-# Myc Pten Analysis
+<div align="center"> # Myc Pten Analysis </div>
 ## MYC-deficiency impairs the development of effector/memory T lymphocytes<br/>
 Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
