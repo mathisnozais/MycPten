@@ -6,6 +6,8 @@ Html report produce through the analysis is directly availabe (link).
 
 Required data, builded Docker images and Robj are all available in SRA/GEO and Zenodo. Intructions to reproduce the analysis are provided below.
 
+---
+
 ## Setup the experiment
 ### Prerequisites
 Docker container images are available on zenodo : link
