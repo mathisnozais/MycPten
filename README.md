@@ -24,9 +24,15 @@ In order to re do Seurat Analysis you can follow guidelines and script here : li
   - 4 Fastq files containing paired-end reads sequenced from the mRNA library of replicate 1 and 2
   - 4 Fastq files containing paired-end reads sequenced from the HTO library of replicate 1 and 2
   - 2 Fastq files containing paired-end reads sequenced from the ADT library of replicate 2
-- Cellranger output and CITE-seq-count output that can be load in Seurat are available in GEO (xxxxxx)respectively under accession number xxxxxxxxx and xxxxxx :
-  - link Cell ranger
-  - link CITE seq count
+- Cellranger output and CITE-seq-count output that can be load in Seurat are available in GEO (GSE169374) https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169374, under accession number :
+  - Replicate 1
+    - Cellranger mRNA GSM5198190 : https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198190
+    - Cite-seq-count HTO GSM5198191 : https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198191
+  - Replicate 2
+    - CellRanger mRNA GSM5198192 : https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198192
+    - Cite-seq-count HTO GSM5198193	: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198193
+    - Cite-seq-count ADT GSM5198194	: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198194
+
 
 #### Seurat analysis
 - Seurat Html report containing figures generated in R from article can be downloaded here : link githtml report
