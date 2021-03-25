@@ -1,10 +1,12 @@
 ---
-title: "Experiment_Preprocessing"
+title: "Report Experiment_Preprocessing"
 author: "Delphine Potier / Mathis Nozais / Saran Pankaew"
 output:
   html_document:
     code_folding: hide
     code_download: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style type="text/css">
@@ -26,12 +28,11 @@ Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean
 
 Link to article : (TO come)
 
-Any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
+If you have any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 
 #to do before publish
 ```{r}
 #change all path to data showing my environment (NAS...) mettre lien à partir de Workspace ou il dowloaderont les fichier source (fastq et objet R)
-#ajouter un test pour etre sur que y'ai subset 1 et 2 et pas que un des deux 
 
 #do we want to show the code in rmd ? 
 
@@ -51,6 +52,7 @@ library(plotly)
 library(kableExtra)
 library(ggplot2)
 library(gridExtra)
+library(DT)
 
 #Path to the analysis folder
 WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_repo/"
@@ -68,10 +70,10 @@ RESOLUTION <- 1
 ```
 
 ```{r, echo=FALSE,results='asis'}
-SAMPLE1 <- "181031"
-SAMPLE2 <- "190211"
+SAMPLE1 <- "replicate1"
+SAMPLE2 <- "replicate2"
 
-if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))){
+if((! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE1, ".Robj"))) | (! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE2, ".Robj")))){
 print("You are starting the analysis from count matrix obtain with CellRanger and Cite-seq-count")
 part1 <- TRUE #experiment one by one
 part2 <- TRUE #merging 2 object
@@ -189,7 +191,7 @@ hashtag1 <- MULTIseqDemux(hashtag1, assay = "HTO",autoThresh = TRUE, maxiter = 1
 ```
 
 ```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
-print (table(hashtag1@meta.data$MULTI_ID))
+datatable(as.matrix(table(hashtag1@meta.data$MULTI_ID)),colnames = "Number of cells")
 ```
 
 
@@ -272,7 +274,7 @@ Here are the description of those parameters in the Seurat *CreateSeuratObject* 
 * min.genes: Include cells where at least 200 genes are detected
 * min.cells: Include genes with detected expression in at least 3 cells
 
-After those filters, the remaining cell number is **`r length(colnames(hashtag1@assays$RNA@data))**.
+After those filters, the remaining cell number is **`length(colnames(hashtag1@assays$RNA@data))`**.
 ```
 
 ```{r doublet_negative_removal, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
@@ -304,60 +306,53 @@ After removing doublets and negative cells, the remaining cell number is **`r le
 
 
 ```{r processing_1, include=FALSE,eval=(part1 == TRUE)}
-# OBJECT ONE SAVE
-
-if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))){
-  #1- QC (fait à partir de la sous sélection)
-  Seurat1 <- QC_function_mito_threshold(Seurat = clean.subset1, mito_threshold = 0.1, do_plot = FALSE)
+# OBJECT ONE PROCESSING AND SAVE
+#1- QC 
+Seurat1 <- QC_function_mito_threshold(Seurat = clean.subset1, mito_threshold = 0.1, do_plot = FALSE)
   
-  #2- Find variable genes
-  Seurat1 <- FindVariableFeatures(object = Seurat1, 
+#2- Find variable genes
+Seurat1 <- FindVariableFeatures(object = Seurat1, 
                                   assay = "RNA", selection.method = "vst", nfeatures = 2000,
                                   verbose = FALSE, do.plot=TRUE)
-  
-  Seurat1 <- ScaleData(Seurat1, 
+
+Seurat1 <- ScaleData(Seurat1, 
                        assay="RNA",
                        verbose = FALSE, 
                        #do.scale = FALSE, 
                        do.center = TRUE)
   
-  Seurat1 <- RunPCA(object = Seurat1,
+Seurat1 <- RunPCA(object = Seurat1,
                     assay = "RNA",
                     verbose = FALSE, #if TRUE print the top genes for each PC
                     features =  VariableFeatures(object = Seurat1), 
                     seed.use = 1234,
                     npcs = 50) # sur les 50 premieres composantes
   
-  ElbowPlot(Seurat1, ndims = 50, reduction = "pca")
+ElbowPlot(Seurat1, ndims = 50, reduction = "pca")
   
-  
-  Seurat1 <- ProjectDim(object = Seurat1,
+Seurat1 <- ProjectDim(object = Seurat1,
                         nfeatures.print = 20,
                         dims.print = 1:10)
   
-  Seurat1 <- RunTSNE(object = Seurat1,
+Seurat1 <- RunTSNE(object = Seurat1,
                      do.fast = TRUE, 
                      seed.use = 1234,
                      dims = 1:20, # Uses 20 first PCs
                      perplexity = 40)
   
-  Seurat1 <- FindNeighbors(object = Seurat1, 
+Seurat1 <- FindNeighbors(object = Seurat1, 
                            dims = 1:20 , 
                            verbose = FALSE, 
                            force.recalc = TRUE, 
                            reduction = "pca")
-  
-  Seurat1 <- FindClusters(object = Seurat1, 
+
+Seurat1 <- FindClusters(object = Seurat1, 
                           resolution = RESOLUTION,
                           verbose = FALSE,
                           random.seed = 1234)
+Seurat1 <- RunUMAP(object = Seurat1, reduction = "pca", seed.use = 1234, dims = 1:20)
   
-  Seurat1 <- RunUMAP(object = Seurat1, reduction = "pca", seed.use = 1234, dims = 1:20)
-  
-  save(Seurat1, file = paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))
-}else{
-  load(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))
-}
+save(Seurat1, file = paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE1, ".Robj"))
 ```
 
 
@@ -466,7 +461,7 @@ hashtag2 <- MULTIseqDemux(hashtag2, assay = "HTO",autoThresh = TRUE, maxiter = 1
 ```
 
 ```{r, message=FALSE,eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
-print (table(hashtag2@meta.data$MULTI_ID))
+datatable(as.matrix(table(hashtag2@meta.data$MULTI_ID)),colnames = "Number of cells")
 ```
 
 ```{asis, eval=(part1 == TRUE ), echo=TRUE}
@@ -627,58 +622,54 @@ print (rownames(adt))
 ```
 
 ```{r Significant_PC, include=FALSE,eval=(part1 == TRUE)}
-# Traitement de l'objet
-if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))){
-  #1- QC 
-  Seurat2 <- QC_function_mito_threshold(Seurat = clean.subset2, mito_threshold = 0.1, do_plot = FALSE)
+# OBJECT TWO PROCESSING AND SAVE
+#1- QC 
+Seurat2 <- QC_function_mito_threshold(Seurat = clean.subset2, mito_threshold = 0.1, do_plot = FALSE)
   
-  #2- Find variable genes
-  Seurat2 <- FindVariableFeatures(object = Seurat2, 
+#2- Find variable genes
+Seurat2 <- FindVariableFeatures(object = Seurat2, 
                                   assay = "RNA",
                                   selection.method = "vst", nfeatures = 2000, verbose = FALSE, do.plot=TRUE)
   
-  Seurat2 <- ScaleData(Seurat2, 
+Seurat2 <- ScaleData(Seurat2, 
                        assay="RNA",
                        verbose = FALSE, 
                        #do.scale = FALSE, 
                        do.center = TRUE)
   
-  Seurat2 <- RunPCA(object = Seurat2,
+Seurat2 <- RunPCA(object = Seurat2,
                     assay = "RNA",
                     verbose = FALSE, #if TRUE print the top genes for each PC
                     features =  VariableFeatures(object = Seurat2), 
                     seed.use = 1234,
                     npcs = 50) 
   
-  ElbowPlot(Seurat2, ndims = 40, reduction = "pca")
+ElbowPlot(Seurat2, ndims = 40, reduction = "pca")
   
-  Seurat <- ProjectDim(object = Seurat2,
+Seurat <- ProjectDim(object = Seurat2,
                        nfeatures.print = 20,
                        dims.print = 1:10)
 
-  Seurat2 <- RunTSNE(object = Seurat2,
+Seurat2 <- RunTSNE(object = Seurat2,
                      do.fast = TRUE, 
                      seed.use = 1234,
                      dims = 1:20, 
                      perplexity = 40)
   
-  Seurat2 <- FindNeighbors(object = Seurat2, 
-                           dims = 1:20 , 
+Seurat2 <- FindNeighbors(object = Seurat2, 
+                         dims = 1:20 , 
                            verbose = FALSE, 
                            force.recalc = TRUE, 
                            reduction = "pca")
   
-  Seurat2 <- FindClusters(object = Seurat2, 
+Seurat2 <- FindClusters(object = Seurat2, 
                           resolution = RESOLUTION,
                           verbose = FALSE,
                           random.seed = 1234)
   
-  Seurat2 <- RunUMAP(object = Seurat2, reduction = "pca", seed.use = 1234, dims = 1:20)
+Seurat2 <- RunUMAP(object = Seurat2, reduction = "pca", seed.use = 1234, dims = 1:20)
   
-  save(Seurat2, file = paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))
-}else{
-  load(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))
-}
+save(Seurat2, file = paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE2, ".Robj"))
 ```
 
 ```{asis, eval=(part1 == TRUE ), echo=TRUE}
@@ -711,8 +702,8 @@ Or our object ?? (link )
 
 ```{r Samples_loading,eval=(part2 == TRUE ) ,include=FALSE}
 #load all seurat objects built previously
-load(paste0(OUTPUT_PATH, "Seurat_clean-subset1_tomerge_", SAMPLE1, ".Robj"))
-load(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))
+load(paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE1, ".Robj"))
+load(paste0(OUTPUT_PATH, "Seurat_clean-subset_tomerge_", SAMPLE2, ".Robj"))
 ```
 
 ```{asis, eval=(part2 == TRUE ), echo=TRUE}
@@ -830,32 +821,29 @@ Seurat <- exp1.2.integrated
 
 ```{r Significant_PC_merge, eval=(part2 == TRUE ),include=FALSE}
 # Traitement de l'objet
-if(! file.exists(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))){
-  
-  Seurat <- ScaleData( object =  Seurat, 
+Seurat <- ScaleData( object =  Seurat, 
                       assay="integrated",
                       verbose = FALSE,
                       #do.scale = FALSE,
                       do.center = TRUE)
   
-  Seurat <- RunPCA(object = Seurat, features = VariableFeatures(Seurat), npcs = 50, seed.use = 1234, verbose = FALSE)
+Seurat <- RunPCA(object = Seurat, features = VariableFeatures(Seurat), npcs = 50, seed.use = 1234, verbose = FALSE)
   
-  ElbowPlot(Seurat, ndims = 40, reduction = "pca")
+ElbowPlot(Seurat, ndims = 40, reduction = "pca")
   
-  # Scorer les genes pour les composantes
-  Seurat <- ProjectDim(object = Seurat,
+Seurat <- ProjectDim(object = Seurat,
                   assay="integrated",
                   nfeatures.print = 20,
                   dims.print = 1:12)
   
-  Seurat <- FindNeighbors(object = Seurat, 
+Seurat <- FindNeighbors(object = Seurat, 
                   dims = 1:12 , 
                   assay="integrated",
                   verbose = FALSE)#, 
                   #force.recalc = TRUE, 
                   #reduction = "pca")
   
-  Seurat <- FindClusters(object = Seurat, 
+Seurat <- FindClusters(object = Seurat, 
                   resolution = 1,
                   assay="integrated",
                   verbose = FALSE,
@@ -863,14 +851,11 @@ if(! file.exists(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))){
     
   #To make the UMAP
   #######################
-  Seurat <- RunUMAP(object = Seurat, reduction = "pca", seed.use = 1234, dims = 1:12)
+Seurat <- RunUMAP(object = Seurat, reduction = "pca", seed.use = 1234, dims = 1:12)
   
-  DimPlot(object = Seurat, reduction = "umap", group.by = "orig.ident")
+DimPlot(object = Seurat, reduction = "umap", group.by = "orig.ident")
   
-  save(Seurat, file = paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))
-}else{
-  load(paste0(OUTPUT_PATH, "Seurat-integrated_181031_190211.Robj"))
-}
+save(Seurat, file = paste0(OUTPUT_PATH, "Seurat-integrated_rep1_rep2.Robj"))
 ```
 
 
@@ -926,33 +911,32 @@ T.Seurat <- subset(x = Seurat, idents = c("11","13","14","16","17","18","19"), i
 ```
 
 ```{r, include=FALSE, eval=(part2 == TRUE )}
-# Traitement de l'objet
-if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset_", ".Robj"))){
-  # Selection was already done at the integration step, even after resubsetting it is worth to reselect (https://github.com/satijalab/seurat/issues/1528). RNA should be used, but then batch is back, subsetting before integration is not good neither (better to keep cells that can be aligned)... 
+# INTEGRATE OBJECT AND SAVE
+
+# Selection was already done at the integration step, even after resubsetting it is worth to reselect (https://github.com/satijalab/seurat/issues/1528). RNA should be used, but then batch is back, subsetting before integration is not good neither (better to keep cells that can be aligned)... 
   
-  T.Seurat <- ScaleData( object =  T.Seurat, 
+T.Seurat <- ScaleData( object =  T.Seurat, 
                       assay="integrated",
                       verbose = FALSE,
                       #do.scale = FALSE,
                       do.center = TRUE)
   
-  T.Seurat <- RunPCA(object = T.Seurat, features = VariableFeatures(T.Seurat), npcs = 100, seed.use = 1234, verbose = FALSE)
+T.Seurat <- RunPCA(object = T.Seurat, features = VariableFeatures(T.Seurat), npcs = 100, seed.use = 1234, verbose = FALSE)
   
-  ElbowPlot(T.Seurat, ndims = 50, reduction = "pca")
-  
-  # Scorer les genes pour les composantes
-  T.Seurat <- ProjectDim(object = T.Seurat,
+ElbowPlot(T.Seurat, ndims = 50, reduction = "pca")
+
+T.Seurat <- ProjectDim(object = T.Seurat,
                   nfeatures.print = 20,
                   dims.print = 1:10)
   
-  T.Seurat <- FindNeighbors(object = T.Seurat,
+T.Seurat <- FindNeighbors(object = T.Seurat,
                   assay = "integrated",
                   dims = 1:18 , 
                   verbose = FALSE)#, 
                   #force.recalc = TRUE, 
                   #reduction = "pca")
   
-    T.Seurat <- FindClusters(object = T.Seurat, 
+  T.Seurat <- FindClusters(object = T.Seurat, 
                   assay = "integrated",
                   resolution = 1.8,
                   verbose = FALSE,
@@ -969,10 +953,6 @@ if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset_", ".Robj")))
   grid.arrange(p1,p2,nrow = 1, ncol =2, newpage=TRUE)
 
   save(T.Seurat, file = paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset", ".Robj"))
-}else{
-  load(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset", ".Robj"))
-}
-
 ```
 
 ```{r , eval=(part2 == TRUE ),echo=FALSE}
@@ -1008,7 +988,7 @@ ggplotly(DimPlot(T.Seurat, group.by = "MULTI_ID"))
 ```
 
 ```{asis, eval=(part2 == TRUE ), echo=TRUE}
-### END OF PREPROCESSING
+## END OF PREPROCESSING
 We obtain the final object with clustering to start the analysis
 ```
 

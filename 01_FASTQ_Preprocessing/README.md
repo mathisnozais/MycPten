@@ -13,83 +13,126 @@ Singularity container images are available in zenodo :
 - CellRanger : link
 - CITE-seq-Count : link
 
-Transcriptome is available at 10xGenomics website (http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz) and in Zenodo (link)
-J'explique eYFP ou donne directement Zenodo ref avec eYFP ??
+The origin of the tanscriptome used is available at 10xGenomics website (http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz). We modify it in order to had eYFP. The mm10-eYFP transcriptome can be download in Zenodo (link mm10-eYFP)
 
 ```bash
-#Download the transcriptome files to the reference folder and unzip it
-wget link -o $WORKING_DIR/01_FASTQ_Preprocessing/data/Reference/
+#Download the eYFP-transcriptome files to the reference folder and unzip it
+wget zenodo link -o $WORKING_DIR/01_FASTQ_Preprocessing/data/Reference/
 ```
 
 In order to prepare the environment for analysis execution, it is required to:
-- Clone this github repository and set the WORKSPACE variable
+- Clone this github repository and set the WORKING_DIR variable
 - Download the Cell ranger and CITEseq count Singularity image tar file
 - Load Singularity image on your system
 - Download raw files to perform the analysis
 
 #### Clone Github repository
 Use your favorite method to clone this repository in a chosen folder.This will create a "MycPten" folder with all the source code. <br/>
-You must set an environment variable called WORKING_DIR with a value set to the path to this folder.
+You must set an environment variable called WORKING_DIR with a value set to the path to this MycPten folder.
 
-revoir cette histoire de workin dir quand clone a test
+revoir cette histoire de workin dir quand clone a test a quoi sert ? Est ce que aprés chaque chemin est a partir de ce WORKING_DIR plus besoin de l'ecrire ?
 
-
+```bash
+export WORKING_DIR=/home/dpotier/workspace/B-ALL-CAR-T
+```
 #### Singularity Images
 Singularity image tar file is stored on Zenodo. Open a shell ..... give instruction to where put it
 
 ```bash
 #Download the singularity images
-wget link -o $WORKING_DIR/Images/
+wget link -o $WORKING_DIR/01_FASTQ_Preprocessing/03_Data
 ```
 
 Singularity must be installed on your system. In order to execute analysis, you must first launch the singularity image you want to use
 
-#### Download raw Files
+#### Download Files
 Fastq files available on SRA link
 To processed with cell ranger :
-- nanan
-- nana
+- rep1_mRNA
+- rep2_mRNA
 
 To processed with CITEseq Count:
-- nanan
-- nanan
+- rep1_HTO
+- rep2_HTO
+- rep2_ADT
 
-### Run the preprocessing
+```bash
+#Download the Fastq files
+wget link -o $WORKING_DIR/Images/
+```
+
+### Run the Fastq preprocessing
 #### CellRanger
-input :
-output :
+input :Fastq files are avaible in SRA (SRP311697). To check number when public data release <br/>
+output :The ouput directory contains the classical cellranger output with the pre-processed data that is used later in the Seurat analysis and a hmtl report.
+- mRNA count per cells
+  - mRNA_barcodes.tsv.gz
+  - mRNA_features.tsv.gz
+  - mRNA_matrix.mtx.gz
 
 To run :
 
 ```bash
 # Launch singularity image
-singularity shell /MycPten/Images/Singularity/MycPten_Cellranger/cellranger2.1.0.img
+singularity shell $WORKING_DIR/MycPten/Images/Singularity/MycPten_Cellranger/cellranger2.1.0.img
 
 bash
 
 #Go to the output directory
-cd /MycPten/01_FASTQ_Preprocessing/Output
+cd  $WORKING_DIR/MycPten/01_FASTQ_Preprocessing/Output
 
 #Run CellRanger
-#replace by good like to file
-nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10 --expect-cells=6000 --transcriptome=/MycPten/01_FASTQ_Preprocessing/Reference/finish line --fastq= --sample=rep1_cDNA &
+#replace by good link to file
+#Replicate 1
+nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep1 --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data --sample=rep1_cDNA &
 
+#Replicate 2
+nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep2 --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data --sample=rep1_cDNA &
 ```
+Once the analysis done, you should get result files in the WORKING_DIR//0_fastq_pre-processing/output folder (with the newly created "MycPten_mm10_rep_" folder)
+
 #### cite-seq-Count
-input
-Output
+input : Fastq files are avaible in SRA (SRP311697). To check number when public data release <br/>
+output : The ouput directory contains the classical cellranger output with the pre-processed data that is used later in the Seurat analysis and a hmtl report.
+- HTO count per cells
+  - HTO_barcodes.tsv.gz
+  - HTO_features.tsv.gz
+  - HTO_matrix.mtx.gz
+
+And only for replicate 2 :
+- ADT count per cells
+  - ADT_barcodes.tsv.gz
+  - ADT_features.tsv.gz
+  - ADT_matrix.mtx.gz
 
 To run :
 ```bash
 # concatenate FASTQ
-to put code
 
+cd $WORKING_DIR/01_FASTQ_Preprocessing/03_Data
+#change fastq name
+
+#this is an example for replicate 1 same should be done with replicate 2
+#concatenate HTO
+cat Payet190408_hashtag_S2_L00*_R1_001.fastq.gz>../Payet190408_hashtag_S2_R1_001.fastq.gz
+cat Payet190408_hashtag_S2_L00*_R2_001.fastq.gz>../Payet190408_hashtag_S2_R2_001.fastq.gz
+
+#concatenate mRNA
+cat
+cat
 
 # Launch singularity image
-singularity shell /MycPten/Images/Singularity/MycPten_CITE/citeseqcount141_image.tar
+singularity shell $WORKING_DIR/Images/Singularity/MycPten_CITE/citeseqcount141_image.tar
 
 bash
 
 #Go to the output directory
 cd /MycPten/01_FASTQ_Preprocessing/Output
+
+#this is an example for replicate 1 same should be done with replicate 2
+# HTO
+CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/taglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_hashtag_hd2
+
+# mRNa
+CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/ADTtaglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_ADT_hd2
 ```

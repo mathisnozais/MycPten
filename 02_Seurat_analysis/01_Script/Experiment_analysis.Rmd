@@ -58,16 +58,11 @@ library(plotly)
 library(kableExtra)
 library(ggplot2)
 library(gridExtra)
-#install.packages("fmsb")
 library(fmsb)
-#BiocManager::install("clusterProfiler")
-#BiocManager::install("enrichplot")
 library(enrichplot)
 library(clusterProfiler)
 #library(ggrepel)
-#install.packages("tidyr")
 #library("tidyr")
-#install.packages("ggthemes")
 library(ggthemes)
 #library(scales)
 library(stringr)
@@ -89,8 +84,8 @@ RESOLUTION <- 1
 
 ```{r,results='asis'}
 #loading final object obtain with Experiment_preprocessing
-SAMPLE1 <- "181031"
-SAMPLE2 <- "190211"
+SAMPLE1 <- "replicate1"
+SAMPLE2 <- "replicate2"
 
 if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))){
 print("You should start with Experiment_preprocessing.Rmd or dowload our final object 'T-Seurat-merged_clean-subset.Robj' ")
