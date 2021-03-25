@@ -1,8 +1,32 @@
 ---
 title: "Experiment_Preprocessing"
 author: "Delphine Potier / Mathis Nozais / Saran Pankaew"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
 ---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
+```
+# MYC-deficiency impairs the development of effector/memory T lymphocytes
+
+Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
+
+*These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
+
+Link to article : (TO come)
+
+Any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 
 #to do before publish
 ```{r}
@@ -48,18 +72,17 @@ SAMPLE1 <- "181031"
 SAMPLE2 <- "190211"
 
 if(! file.exists(paste0(OUTPUT_PATH, "Seurat_clean-subset2_tomerge_", SAMPLE2, ".Robj"))){
-print("You are starting the analysis from count matrix blabla ..")
+print("You are starting the analysis from count matrix obtain with CellRanger and Cite-seq-count")
 part1 <- TRUE #experiment one by one
 part2 <- TRUE #merging 2 object
 }else if( file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))){
-print("You already have the final object, you can now lauch the analysis")
+print("You already have the final object of preprocessing, you can now lauch the Experiment_analysis script")
 part1 <- FALSE
 part2 <- FALSE
 }else{ 
-print ("You are starting analysis from our two Robj blabla ..")
+print ("You are starting analysis from our two replicate Robj in order to do the integration")
 part1 <- FALSE
 part2 <- TRUE
-part3 <- TRUE
 }
 
 ```
@@ -146,11 +169,11 @@ hashtag1 <- NormalizeData(hashtag1, assay = "HTO",normalization.method = "CLR",d
 
 ```{asis, eval=(part1 == TRUE ), echo=TRUE}
 # Demultiplexing HTO
+Demultiplex cells based on HTO enrichment
 ```
 
-
 ```{r Demultiplexing, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
-#Demultiplex cells based on HTO enrichment
+
 #Run HTOdemux just to get the HTOmax_ID fied
 hashtag1 <- HTODemux(hashtag1, assay = "HTO", positive.quantile = 0.99, verbose = FALSE)
 #Here we use the Seurat function MULTIseqDemux() to assign single cells back to their sample origins.

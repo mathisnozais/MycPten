@@ -20,6 +20,15 @@ output:
 knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
 ```
 
+# MYC-deficiency impairs the development of effector/memory T lymphocytes
+
+Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
+
+*These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
+
+Link to article : (TO come)
+
+Any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 
 #to do before publish
 ```{r}
@@ -36,6 +45,8 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
 #verif tout comm sont bein en anglais
 
 #CD8 vs CD4 remettre les calcul de fin marker pour le final et pas le load fichier qui est la poru gagner du temps
+
+#change output path
 ```
 
 
@@ -49,14 +60,14 @@ library(ggplot2)
 library(gridExtra)
 #install.packages("fmsb")
 library(fmsb)
-BiocManager::install("clusterProfiler")
-BiocManager::install("enrichplot")
+#BiocManager::install("clusterProfiler")
+#BiocManager::install("enrichplot")
 library(enrichplot)
 library(clusterProfiler)
 #library(ggrepel)
 #install.packages("tidyr")
 #library("tidyr")
-install.packages("ggthemes")
+#install.packages("ggthemes")
 library(ggthemes)
 #library(scales)
 library(stringr)
@@ -69,7 +80,7 @@ CWD <- "/home/nozaism/Workspace/Function_delphine/"
 # Load the R scripts containing the functions used in the analysis
 source(paste(CWD, "Workflow_functions_S3.R", sep="/"))
 #  Path to the folder that will contain output objects
-OUTPUT_PATH <- (paste0(WORKSPACE,"02_Seurat_analysis/02_Output/"))
+OUTPUT_PATH <- ("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Output_repo/")
 # Set the random number seed
 set.seed(1234)
 # Resolution parameter for Seurat clustering
