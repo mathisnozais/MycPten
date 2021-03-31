@@ -33,10 +33,7 @@ If you have any questions on this analysis, please contact Mathis Nozais or Delp
 #to do before publish
 ```{r}
 #change all path to data showing my environment (NAS...) mettre lien à partir de Workspace ou il dowloaderont les fichier source (fastq et objet R)
-
-#do we want to show the code in rmd ? 
-
-# GO mise en ligne des fichier brut
+#change path to new file name without date..
 
 #test final sans aucun objet, avec le premier obj et avec le deuxieme
 
@@ -59,7 +56,7 @@ WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_rep
 # Path to the folder containing scripts used in the analysis
 CWD <- "/home/nozaism/Workspace/Function_delphine/" 
 # Load the R scripts containing the functions used in the analysis
-source(paste(CWD, "Workflow_functions_S3.R", sep="/"))
+source("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/02_Seurat_analysis/01_Script/Workflow_function.R")
 #  Path to the folder that will contain output objects
 #OUTPUT_PATH <- (paste0(WORKSPACE,"02_Seurat_analysis/02_Output/"))
 OUTPUT_PATH <- ("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Output_repo/")
@@ -108,7 +105,7 @@ PATH_HTO_DATA1 <- "/mnt/NAS5/BNlab/delphine/barecoded_scRNAseq/MYC_PTEN/CITE-seq
 mouse_data1 <- Read10X(data.dir = PATH_MOUSE_DATA1)
 
 # Create the Seurat object and first filter
-Not_processed_Seurat_m1 <- CreateSeuratObject(counts = mouse_data1, min.cells = 3, min.features = 200, project = "181031")
+Not_processed_Seurat_m1 <- CreateSeuratObject(counts = mouse_data1, min.cells = 3, min.features = 200, project = "replicate1")
 ```
 
 ```{r HTO1_loading, include=FALSE,eval=(part1 == TRUE)}
@@ -149,7 +146,7 @@ rowSums(hto1)
 ```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Setup seurat object and add in the hto data
 # Setup Seurat object
-hashtag1 <- CreateSeuratObject(counts = umi_sparse1[,joint_bcs1], assay = "RNA", project = "181031")
+hashtag1 <- CreateSeuratObject(counts = umi_sparse1[,joint_bcs1], assay = "RNA", project = "replicate1")
 
 # Normalize RNA data with log normalization
 hashtag1 <- NormalizeData(hashtag1,display.progress = FALSE)
@@ -266,7 +263,7 @@ RidgePlot(hashtag1, assay = "HTO", features = rownames(GetAssayData(hashtag1,ass
 ```{asis, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 ## Sample Information
 
-The analysis will be run on the sample 1 (181031).
+The analysis will be run on the sample 1.
 
 During the sample loading, we filter cells that do not pass the following filters.   
 Here are the description of those parameters in the Seurat *CreateSeuratObject* function:
@@ -274,8 +271,13 @@ Here are the description of those parameters in the Seurat *CreateSeuratObject* 
 * min.genes: Include cells where at least 200 genes are detected
 * min.cells: Include genes with detected expression in at least 3 cells
 
-After those filters, the remaining cell number is **`length(colnames(hashtag1@assays$RNA@data))`**.
 ```
+
+```{r, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
+a <- length(colnames(hashtag1@assays$RNA@data))
+print(paste("After those filters, the remaining cell number is", a), quote = FALSE) 
+```
+
 
 ```{r doublet_negative_removal, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 #add Exp1 cell identity
@@ -300,8 +302,9 @@ clean.subset1 <- subset(x = hashtag1, cells = HTO_identified1)
 VlnPlot(clean.subset1,features = c("nFeature_RNA", "nCount_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
-```{asis, eval=(part1 == TRUE ), echo=TRUE}
-After removing doublets and negative cells, the remaining cell number is **`r length(colnames(clean.subset1@assays$RNA@data))**.
+```{r, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
+a <- length(colnames(clean.subset1@assays$RNA@data))
+print(paste("After removing doublets and negative cells, the remaining cell number is", a), quote = FALSE) 
 ```
 
 
@@ -394,7 +397,7 @@ mouse_data2 <- Read10X(data.dir = PATH_MOUSE_DATA2)
 
 
 # Create the Seurat object and first filter
-Not_processed_Seurat_m2 <- CreateSeuratObject(counts = mouse_data2, min.cells = 3, min.features = 200, project = "190211")
+Not_processed_Seurat_m2 <- CreateSeuratObject(counts = mouse_data2, min.cells = 3, min.features = 200, project = "replicate2")
 ```
 
 ```{r , message=FALSE, include=FALSE,eval=(part1 == TRUE)}
@@ -427,7 +430,7 @@ rowSums(hto2)
 ```{r, message=FALSE, include=FALSE,eval=(part1 == TRUE)}
 ### Setup seurat object and add in the hto data
 # Setup Seurat object
-hashtag2 <- CreateSeuratObject(counts = umi_sparse2[,joint_bcs2 ], assay = "RNA", project = "190211")
+hashtag2 <- CreateSeuratObject(counts = umi_sparse2[,joint_bcs2 ], assay = "RNA", project = "replicate2")
 
 # Normalize RNA data with log normalization
 hashtag2 <- NormalizeData(hashtag2,display.progress = FALSE)
@@ -534,17 +537,19 @@ RidgePlot(hashtag2, assay = "HTO", features = rownames(GetAssayData(hashtag1,ass
 
 ## Sample Information
 
-The analysis will be run on the sample 2 (190211).
+The analysis will be run on the sample 2.
 
 During the sample loading, we filter cells that do not pass the following filters.
 
 Used parameters in the Seurat *CreateSeuratObject* function:
 * min.genes: 3 . Include cells where at least 3 genes are detected
 * min.cells: 200 . Include genes with detected expression in at least 200 cells
-
-After those filters, the remaining cell number is **`r length(colnames(hashtag2@assays$RNA@data))**.
 ```
 
+```{r, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
+a <-length(colnames(hashtag2@assays$RNA@data))
+print(paste("After those filters, the remaining cell number is", a), quote = FALSE) 
+```
 
 ```{r cell_select_2, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
 #add Exp2 cell identity
@@ -568,9 +573,9 @@ clean.subset2 <- subset(x = hashtag2, cells = HTO_identified2)
 VlnPlot(clean.subset2,features = c("nFeature_RNA", "nCount_RNA"),pt.size = 0.1, log = TRUE,  group.by = "MULTI_ID")
 ```
 
-
-```{asis, eval=(part1 == TRUE ), echo=TRUE}
-After removing doublets and negative cells, the remaining cell number is **`r length(colnames(clean.subset2@assays$RNA@data))**.
+```{r, eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}
+a <-length(colnames(clean.subset2@assays$RNA@data))
+print(paste("After removing doublets and negative cells, the remaining cell number is", a), quote = FALSE) 
 ```
 
 ```{asis, eval=(part1 == TRUE ), echo=TRUE}
@@ -726,18 +731,24 @@ common_genes <- Reduce(intersect, list(gene1,gene2))
 exp1.2.integrated <- IntegrateData(anchorset = exp.anchors, features.to.integrate = common_genes,dims = 1:30)
 ```
 
+```{r, eval=(part2 == TRUE ), echo=TRUE}
+a <- length(gene1)
+b <- length(gene2)
+c <- length(common_genes)
+
+print(paste("We identified ",a," expressed in sample1 and ",b," expressed in sample2.",c,"are in common in this two set and will the integrated in the merged and corrected object."), quote = FALSE) 
+
+```
+
 
 ```{asis, eval=(part2 == TRUE ), echo=TRUE}
-We identified **`r length(gene1)`** expressed in sample1 and **`r length(gene2)`** expressed in sample2. **`r length(common_genes)`** are in common in this two set and will the integrated in the merged and corrected object.
-
-
 ## UMAP:
 
 # Analysis part
 
 ## Sample Information
 
-The analysis will be run on the sample MYC_PTEN_01 (181031 & 190211).
+The analysis will be run on the replicate 1 and 2.
 
 During the sample loading, we filter cells that do not pass the following filters. We also filter cells that are detected as human/mouse multiplet using their barcodes.  
 Here are the description of those parameters in the Seurat *CreateSeuratObject* function:
@@ -755,15 +766,16 @@ Filter_parameters["Value", "min.genes"] <- 200
 kable(Filter_parameters, "html", align = "c") %>% kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
+```{r, eval=(part2 == TRUE ), echo=TRUE}
+a <- length(colnames(exp1.2.integrated))
 
-```{asis, eval=(part2 == TRUE ), echo=TRUE}
-After those filters, and merging MYC_PTEN_01 and MYC_PTEN02 the remaining cell number is **`r length(colnames(exp1.2.integrated))`**.
+print(paste("After those filters, and merging MYC_PTEN_01 and MYC_PTEN02 the remaining cell number is",a), quote = FALSE) 
+
 ```
 
 
-
 ```{r cell_select,eval=(part2 == TRUE ), results='asis',include=FALSE}
-### add Exp1 cell identity (181031)
+### add Exp1 cell identity
 #add Exp1 cell identity
 HTO_cr6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Spleen-ctrl" )),"_2"),colnames(x = exp1.2.integrated))
 HTO_ct6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Thymus-ctrl" )),"_2"),colnames(x = exp1.2.integrated))
@@ -774,7 +786,7 @@ HTO_pt6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Thy
 HTO_pmr6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Spleen-MP" )),"_2"),colnames(x = exp1.2.integrated))
 HTO_pmt6 <- intersect(paste0(row.names(subset(Seurat1@meta.data, MULTI_ID == "Thymus-MP" )),"_2"),colnames(x = exp1.2.integrated))
 
-### add Exp2 cell identity (190211) 
+### add Exp2 cell identity
 HTO_cr2 <- intersect(paste0(row.names(subset(Seurat2@meta.data, MULTI_ID == "Spleen-ctrl" )),"_1"),colnames(x = exp1.2.integrated))
 HTO_ct2 <- intersect(paste0(row.names(subset(Seurat2@meta.data, MULTI_ID== "Thymus-ctrl" )),"_1"),colnames(x = exp1.2.integrated))
 HTO_mr2 <- intersect(paste0(row.names(subset(Seurat2@meta.data, MULTI_ID== "Spleen-M" )),"_1"),colnames(x = exp1.2.integrated))
@@ -956,7 +968,7 @@ T.Seurat <- FindNeighbors(object = T.Seurat,
 ```
 
 ```{r , eval=(part2 == TRUE ),echo=FALSE}
-### add Exp2 cell identity (190211) 
+### add Exp2 cell identity 
 spleen.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-P" )))
 
 thymus.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-P" )))

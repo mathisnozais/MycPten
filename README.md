@@ -1,11 +1,11 @@
 # MYC-deficiency impairs the development of effector/memory T lymphocytes
 
-Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
+Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
 *These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
-Link to article : (TO come)
-
+Link to article : (TO come) put DOI
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)
 ---
 
 ### Overview
@@ -41,4 +41,4 @@ Rmd script can be found here : link script
 
 
 #### Docker and Singularity images
-Singularity/Docker images and Robj are all availabe in Zenodo : link
+Singularity/Docker images and Robj are all availabe in Zenodo : https://doi.org/10.5281/zenodo.4636520

@@ -10,14 +10,15 @@ If you don't want to redo data pre-processing directly go to (link to 02_Seurata
 ## Setup the experiment
 ### Prerequisites
 Singularity container images are available in zenodo :
-- CellRanger : link
-- CITE-seq-Count : link
+- CellRanger
+- CITE-seq-Count
 
 The origin of the tanscriptome used is available at 10xGenomics website (http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz). We modify it in order to had eYFP. The mm10-eYFP transcriptome can be download in Zenodo (link mm10-eYFP)
 
 ```bash
-#Download the eYFP-transcriptome files to the reference folder and unzip it
-wget zenodo link -o $WORKING_DIR/01_FASTQ_Preprocessing/data/Reference/
+#Download the eYFP-transcriptome files to the reference folder
+wget $WORKING_DIR/01_FASTQ_Preprocessing/data/Reference/ https://zenodo.org/record/4636520/files/genome.fa?download=1
+wget $WORKING_DIR/01_FASTQ_Preprocessing/data/Reference/ https://zenodo.org/record/4636520/files/genes.gtf?download=1
 ```
 
 In order to prepare the environment for analysis execution, it is required to:
@@ -40,7 +41,12 @@ Singularity image tar file is stored on Zenodo. Open a shell ..... give instruct
 
 ```bash
 #Download the singularity images
-wget link -o $WORKING_DIR/01_FASTQ_Preprocessing/03_Data
+# To download CellRanger
+wget -P $WORKING_DIR/Images https://zenodo.org/record/4636520/files/cellranger2.1.0.img?download=1
+
+# To download CiteSeqCount
+wget -P $WORKING_DIR/Images https://zenodo.org/record/4636520/files/citeseqcount141_image.tar?download=1
+
 ```
 
 Singularity must be installed on your system. In order to execute analysis, you must first launch the singularity image you want to use
@@ -58,7 +64,7 @@ To processed with CITEseq Count:
 
 ```bash
 #Download the Fastq files
-wget link -o $WORKING_DIR/Images/
+wget $WORKING_DIR/Images/ link SRA
 ```
 
 ### Run the Fastq preprocessing
@@ -114,8 +120,8 @@ cd $WORKING_DIR/01_FASTQ_Preprocessing/03_Data
 
 #this is an example for replicate 1 same should be done with replicate 2
 #concatenate HTO
-cat Payet190408_hashtag_S2_L00*_R1_001.fastq.gz>../Payet190408_hashtag_S2_R1_001.fastq.gz
-cat Payet190408_hashtag_S2_L00*_R2_001.fastq.gz>../Payet190408_hashtag_S2_R2_001.fastq.gz
+cat Payet190408_hashtag_S2_L00*_R1_001.fastq.gz > ../Payet190408_hashtag_S2_R1_001.fastq.gz
+cat Payet190408_hashtag_S2_L00*_R2_001.fastq.gz > ../Payet190408_hashtag_S2_R2_001.fastq.gz
 
 #concatenate mRNA
 cat
