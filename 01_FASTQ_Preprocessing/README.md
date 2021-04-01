@@ -34,7 +34,7 @@ You must set an environment variable called WORKING_DIR with a value set to the 
 revoir cette histoire de workin dir quand clone a test a quoi sert ? Est ce que aprés chaque chemin est a partir de ce WORKING_DIR plus besoin de l'ecrire ?
 
 ```bash
-export WORKING_DIR=/home/dpotier/workspace/B-ALL-CAR-T
+export WORKING_DIR=/home/nozaism/workspace/Myc_Pten
 ```
 #### Singularity Images
 Singularity image tar file is stored on Zenodo. Open a shell ..... give instruction to where put it
@@ -113,20 +113,6 @@ And only for replicate 2 :
 
 To run :
 ```bash
-# concatenate FASTQ
-
-cd $WORKING_DIR/01_FASTQ_Preprocessing/03_Data
-#change fastq name
-
-#this is an example for replicate 1 same should be done with replicate 2
-#concatenate HTO
-cat Payet190408_hashtag_S2_L00*_R1_001.fastq.gz > ../Payet190408_hashtag_S2_R1_001.fastq.gz
-cat Payet190408_hashtag_S2_L00*_R2_001.fastq.gz > ../Payet190408_hashtag_S2_R2_001.fastq.gz
-
-#concatenate mRNA
-cat
-cat
-
 # Launch singularity image
 singularity shell $WORKING_DIR/Images/Singularity/MycPten_CITE/citeseqcount141_image.tar
 
@@ -140,5 +126,5 @@ cd /MycPten/01_FASTQ_Preprocessing/Output
 CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/taglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_hashtag_hd2
 
 # mRNa
-CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/ADTtaglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_ADT_hd2
+CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/ADTtaglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o $WORKING_DIR/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_ADT_hd2
 ```

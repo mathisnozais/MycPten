@@ -16,7 +16,7 @@ Required data, builded Docker images and Robj are all available in SRA/GEO and Z
 Docker container images are available on zenodo : https://doi.org/10.5281/zenodo.4636520
 
 In order to prepare the environment for analysis execution, it is required to:
-- Clone this github repository and set the WORKSPACE variable
+- Clone this github repository and set the WORKING_DIR variable
 - Download the RStudio / Seurat docker image tar file
 - Load the docker image on your system
 - Download files to perform the analysis on Zenodo https://doi.org/10.5281/zenodo.4636520

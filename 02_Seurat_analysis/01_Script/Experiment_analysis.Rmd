@@ -3,9 +3,11 @@ title: "Experiment_analysis"
 author: "Delphine Potier / Mathis Nozais / Saran Pankaew"
 output:
   html_document:
+    
     code_folding: hide
     code_download: true
-    
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style type="text/css">
@@ -101,6 +103,7 @@ do <- TRUE
 
 ```{asis, eval=(do == TRUE ), echo=TRUE}
 # Creating tissue subset
+Separation of thymic and splenic subset based on the proportion of cells origin 
 ## Thymus subset
 ```
 
@@ -111,12 +114,12 @@ a <- t(margin.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.dat
 T.Seurat.spleen <- subset(T.Seurat, idents = c("Myc- PTEN- spleen","MYC- spleen","PTEN- spleen","WT spleen"))
 b <- t(margin.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$integrated_snn_res.1.8),2))
 c <- t((a/(a+b)*100))
-c
+
 #Thymic populations
 thymus.clusters <- rownames(as.data.frame(c[which(c[,1]>25),]))
 Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
 T.Seurat.thymus <- subset(T.Seurat.thymus, idents = thymus.clusters)
-DimPlot(T.Seurat.thymus)
+DimPlot(T.Seurat.thymus)+ggtitle("Thymic subset")
 ```
 
 ```{asis, eval=(do == TRUE ), echo=TRUE}
@@ -126,11 +129,11 @@ DimPlot(T.Seurat.thymus)
 
 ```{r}
 #Spleen populations
-as.data.frame(100-c[which(c[,1]<75),])
+#as.data.frame(100-c[which(c[,1]<75),])
 spleen.clusters <- rownames(as.data.frame(c[which(c[,1]<75),]))
 Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
 T.Seurat.spleen <- subset(T.Seurat.spleen, idents = spleen.clusters)
-DimPlot(T.Seurat.spleen)
+DimPlot(T.Seurat.spleen)+ggtitle("Splenic subset")
 ```
 
 # Manual clustering
@@ -188,7 +191,7 @@ T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22
 levels(T.Seurat.thymus)
 ```
 
-```{r}
+```{r,fig.width = 10, fig.height = 4}
 DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
   panel.background = element_rect(fill = "grey65",
                                 size = 0.5, linetype = "solid"),
