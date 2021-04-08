@@ -22,11 +22,13 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
 ```
 # MYC-deficiency impairs the development of effector/memory T lymphocytes
 
-Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
+Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
 *These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
 Link to article : (TO come)
+
+Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
 
 If you have any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 

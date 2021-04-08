@@ -24,11 +24,13 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align = 'center')
 
 # MYC-deficiency impairs the development of effector/memory T lymphocytes
 
-Authors :Mathis Nozais1*, Marie Loosveld1,2*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
+Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
 *These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
 Link to article : (TO come)
+
+Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
 
 Any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 
@@ -188,10 +190,9 @@ Setting thymic cluster order
 ```{r}
 Idents(T.Seurat.thymus) <- "manualclusters"
 T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20,18,14","8,2,3,23","7","6","10,16","17"))
-levels(T.Seurat.thymus)
 ```
 
-```{r,fig.width = 10, fig.height = 4}
+```{r,fig.width = 10, fig.height = 6}
 DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
   panel.background = element_rect(fill = "grey65",
                                 size = 0.5, linetype = "solid"),
@@ -296,7 +297,7 @@ FeaturePlot(T.Seurat, features = c("percent.mito"),cols = c("grey", "light blue"
 Cluster 6 seems to contain dying cells
 
 ### Cluster 7
-```{r,fig.width = 15, fig.height = 4}
+```{r,fig.width = 10, fig.height = 8}
 FeaturePlot(T.Seurat, features = c("Cd69","Cd5","Satb1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black")) #marker of TCR activation 
 ```
 Seems to contain cells going from DP to SP between thymus and spleen
@@ -308,7 +309,7 @@ Seems to contain cells going from DP to SP between thymus and spleen
 FeaturePlot(T.Seurat, features = c("Cd4","adt_CD4"))
 ```
 
-```{r, fig.width = 20, fig.height = 16}
+```{r, fig.width = 20, fig.height = 12}
 VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r","Cxcr3"),ncol=2) # Cxcr3 high on effector
 ```
 Seems to contain CD4 eff (Cd4+, Sell-, Ccr7-, Cd127-)
@@ -319,7 +320,7 @@ Seems to contain CD4 eff (Cd4+, Sell-, Ccr7-, Cd127-)
 ```
 
 ### Cluster 11
-```{r cluster11, fig.width = 10, fig.height = 4}
+```{r cluster11,fig.width = 10, fig.height = 8}
 FeaturePlot(T.Seurat, features = c("Cd8b1","Sell","Ccl5","adt_CD4"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
 
 FeaturePlot(T.Seurat, features = c("Trac","Trbc1","Trdc","Tcrg-C1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
@@ -329,16 +330,16 @@ FeaturePlot(T.Seurat, features = c("Trac","Trbc1","Trdc","Tcrg-C1"),cols = c("gr
 FeaturePlot(T.Seurat, features = c("Ly6c2","Nkg7"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
 ```
 
-```{r,fig.width = 15, fig.height = 6}
+```{r,fig.width = 20, fig.height = 6}
 VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r"))
 ```
 
 Cluster 11 Seems to contain CD8 mem cells & seem to contain Tgd cells & Ly6c2+
 
 ### Cluster 12
-```{r cluster12}
+```{r cluster12,fig.width = 10, fig.height = 8}
 FeaturePlot(T.Seurat, features = c("adt_CD4","Sell","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
-FeatureScatter(object = T.Seurat, feature1 = "adt_CD4", feature2 = "CD8", cells = colnames(subset(T.Seurat, idents = "0")), slot = "data")
+#FeatureScatter(object = T.Seurat, feature1 = "adt_CD4", feature2 = "CD8", cells = colnames(subset(T.Seurat, idents = "0")), slot = "data")
 ```
 Cluster 12 seems to contain naive SP4 cells (CD4+, Cd8- and CD62L -)
 
@@ -417,8 +418,8 @@ This cluster is heterogeneous
 FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
 ```
 
-```{r,fig.width = 15, fig.height = 6}
-VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
+```{r,fig.width = 15, fig.height = 10}
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67"),ncol=2) #teichmann
 ```
 Cluster 14 seems to be Dp blast
 
@@ -439,8 +440,13 @@ Cluster 17 seem to contain Tgd DN (CD4-, Cd8-, TCR D+, TCR G+)
 ### Cluster 18
 ```{r,fig.width = 10, fig.height = 8}
 FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
-VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
+
 ```
+
+```{r,fig.width = 15, fig.height = 10}
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67"),ncol=2) #teichmann
+```
+
 Dp blast
 
 ### Cluster 19
@@ -449,7 +455,7 @@ FeaturePlot(T.Seurat, features = c("Cd8b1","Sell","Ccl5","Gzma","Klrc1","Ifng","
 # Zeb2 terminally differentiated CTL
 ```
 
-```{r,fig.width = 15, fig.height = 6}
+```{r,fig.width = 20, fig.height = 6}
 VlnPlot(T.Seurat.spleen, features = c("Sell","Ccr7","Il7r"))
 ```
 
@@ -458,15 +464,23 @@ Cluster 19 seemsto contain CD8 CTL (CD4-, Cd8+, Ccl5+, Sell-, ccr7-,cd127-) & Ly
 ### Cluster 20
 ```{r,fig.width = 10, fig.height = 8}
 FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1"),cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
-VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67")) #teichmann
 ```
+
+```{r,fig.width = 15, fig.height = 10}
+VlnPlot(T.Seurat, features = c("Pcna","Cdk1","Mki67"),ncol=2) #teichmann
+```
+
 Seems to be Dp blast
 
 ### Cluster 21
 ```{r,fig.width = 10, fig.height = 4}
 FeaturePlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
+```
+
+```{r,fig.width = 20, fig.height = 6}
 VlnPlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
 ```
+
 Cluster 21 seem to contain ISP cells (CD4-, Cd8+)
 
 ### Cluster 22
@@ -476,7 +490,7 @@ FeaturePlot(T.Seurat, features = c("adt_CD4","Cd4","Cd8b1","Il2ra"),cols = c("gr
 Cluster 22 seems to contain DN T cells (CD4-, Cd8-, Cd25+)
 
 ### Cluster 23
-```{r,fig.width = 15, fig.height = 3}
+```{r,fig.width = 15, fig.height = 6}
 VlnPlot(T.Seurat, features = c("Cd8b1","adt_CD4"))
 VlnPlot(T.Seurat, features = c("Rag1")) #on DP cells mostly (immgen), DP quicient or DP blast (Teichman)
 ```
