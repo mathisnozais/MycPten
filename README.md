@@ -10,9 +10,9 @@ Link to article : (TO come) put DOI
 ---
 
 ### Overview
-This repository contains the instructions and material to reproduce the analysis reported in the article. Source code is available in the github repository. Required data and builded Docker/singularity images are available respectively in SRA/GEO and Zenodo. Intructions to reproduce the analysis are provided in the different subdirectories:
+This repository contains the instructions and material to reproduce the analysis reported in the article. Source code is available in the github repository. Required data and builded Docker/singularity images are available respectively in SRA/GEO and Zenodo. Instructions to reproduce the analysis are provided in the different subdirectories:
 
-- Fastq preprocessing is discribed in the 01_FASTQ_Preprocessing folder
+- Fastq preprocessing is discribed in the [01_FASTQ_Preprocessing folder](01_FASTQ_Preprocessing/README.md)
 In order to re do Fastq preprocessing you can follow guidelines and script here : link to readm me 01_FASTQ_Preprocessing
 - Seurat analysis is discribed in the 02_Seurat_analysis
 In order to re do Seurat Analysis you can follow guidelines and script here : link to Readme 02_Seurat_analysis
