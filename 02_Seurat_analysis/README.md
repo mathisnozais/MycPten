@@ -1,6 +1,6 @@
 # Seurat analysis
 ## Overview
-This repository describes how the scRNAseq data analysis was performed with Seurat. It contains the instructions and material to reproduce the analysis reported in the article.
+This repository describes how the scRNAseq data analysis was performed with Seurat. It contains the instructions and material to reproduce the analysis reported in the article.To reproduce the analysis, you have to first, prepare the environments (see "Prerequisites" section below), then execute the analysis described in the "Run the analysis" section below.
 Source code is directly available in the github repository (https://github.com/mathisnozais/MycPten/02_Seurat_analysis/01_Script).
 Html report produce through the analysis is directly availabe (https://github.com/mathisnozais/MycPten/02_Seurat_analysis/02_Output).
 The Seurat analysis is divided in two script :

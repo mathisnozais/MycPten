@@ -35,12 +35,9 @@ In order to re do Seurat Analysis you can follow guidelines and script here : [0
     - [Cite-seq-count HTO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198193) (*GSM5198193*)
     - [Cite-seq-count ADT](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198194) (*GSM5198194*)
 
-
 #### Seurat analysis
 - Seurat Html report containing figures generated in R from article can be [downloaded here](relative link to git html report) :
 - Seurat rmd script to reproduce the preprocessing can be found [here](02_Seurat_analysis/01_Script/Experiment_preprocessing.Rmd) and analysis rmd script [here](02_Seurat_analysis/01_Script/Experiment_analysis.Rmd)
 
-
-
 #### Docker and Singularity images
-Singularity/Docker images and Robj are all availabe in [Zenodo](https://doi.org/10.5281/zenodo.4636520) 
+Singularity/Docker images and Robj are all availabe in [Zenodo](https://doi.org/10.5281/zenodo.4636520)
