@@ -64,12 +64,15 @@ To processed with CITEseq Count:
 ```bash
 #Download the Fastq files
 wget $WORKING_DIR/03_Data/Fastq/ link SRA
+wget $WORKING_DIR/03_Data/Fastq/
+wget $WORKING_DIR/03_Data/Fastq/
+wget $WORKING_DIR/03_Data/Fastq/ 
 ```
 
 ### Run the Fastq preprocessing
 #### CellRanger
-Input :Fastq files download from SRA (SRP311697)link and to check number when public data release <br/>
-Output :The ouput directory contains the classical cellranger output with the pre-processed data that is used later in the Seurat analysis
+Input : Fastq files download from SRA (SRP311697)link to check number when public data release <br/>
+Output : The ouput directory contains the classical cellranger output with the pre-processed data that is used later in the Seurat analysis
 - mRNA count per cells
   - mRNA_barcodes.tsv.gz
   - mRNA_features.tsv.gz
@@ -90,16 +93,16 @@ cd  $WORKING_DIR/MycPten/01_FASTQ_Preprocessing/02_Output
 #Run CellRanger
 #replace by good link to file
 #Replicate 1
-nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep1 --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data --sample=rep1_cDNA &
+nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep_1_mRNA --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data/Fastq/ --sample=rep1_mRNA &
 
 #Replicate 2
-nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep2 --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data --sample=rep1_cDNA &
+nohup /usr/local/share/cellranger/cellranger-2.1.0/cellranger count --id=MycPten_mm10_rep2_mRNA --expect-cells=6000 --transcriptome=$WORKING_DIR/01_FASTQ_Preprocessing/Reference/cellranger_mm10-eYFP --fastq=$WORKING_DIR/03_Data/Fastq/ --sample=rep2_mRNA &
 ```
-Once the analysis done, you should get result files in the WORKING_DIR/01_FASTQ_Preprocessing/02_Output folder (with the newly created "MycPten_mm10_rep_1" and rep2 folder)
+Once the analysis is done, you should get result files in the WORKING_DIR/01_FASTQ_Preprocessing/02_Output folder (with the newly created "MycPten_mm10_rep_1_mRNA" and rep2 folder)
 
 #### cite-seq-Count
 input : Fastq files are avaible in SRA (SRP311697). To check number when public data release <br/>
-output : The ouput directory contains the classical cellranger output with the pre-processed data that is used later in the Seurat analysis and a hmtl report.
+output : The ouput directory contains the classical CiteSeqCount output with the pre-processed data that is used later in the Seurat analysis and a hmtl report.
 - HTO count per cells
   - HTO_barcodes.tsv.gz
   - HTO_features.tsv.gz
@@ -119,12 +122,16 @@ singularity shell $WORKING_DIR/Images/Singularity/MycPten_CITE/citeseqcount141_i
 bash
 
 #Go to the output directory
-cd /MycPten/01_FASTQ_Preprocessing/Output
+cd /MycPten/01_FASTQ_Preprocessing/02_Output
 
-#this is an example for replicate 1 same should be done with replicate 2
+#FOR REPLICATE 1
 # HTO
-CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_hashtag_S2_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/taglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_hashtag_hd2
+CITE-seq-Count -R1 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep1_HTO_S2_R1.fastq.gz -R2 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep1_HTO_S2_R2.fastq.gz -t $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/HTOlist_rep1.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o MycPten_rep1_HTO
 
-# mRNa
-CITE-seq-Count -R1 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R1_001.fastq.gz -R2 /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/Payet190408_ADT_S4_R2_001.fastq.gz -t /mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/ADTtaglist_190408.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o $WORKING_DIR/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190408_Result_ADT_hd2
+#FOR REPLICATE 2
+#HTO
+CITE-seq-Count -R1 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep2_HTO_S2_R1.fastq.gz -R2 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep2_HTO_S2_R2.fastq.gz -t $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/HTOlist_rep2.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o MycPten_rep2_HTO
+
+#ADT
+CITE-seq-Count -R1 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep2_ADT_S3_R1.fastq.gz -R2 $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/Fastq/rep2_ADT_S3_R2.fastq.gz -t $WORKING_DIR/01_FASTQ_Preprocessing/03_Data/ADTlist_rep2.csv -cbf 1 -cbl 16 -umif 17 -umil 26 --max-errors 2 -cell 40000 -o MycPten_rep2_ADT
 ```

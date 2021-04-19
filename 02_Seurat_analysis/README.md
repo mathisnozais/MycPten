@@ -34,7 +34,8 @@ export WORKING_DIR=/home/nozais/workspace/Myc_Pten
 ```
 
 #### Docker images
-In order to execute analysis, you must load the provided docker images onto your Docker. Docker must be installed on your system. See https://docs.docker.com/install/ for details on Docker installation.
+> :warning: In order to execute analysis, you must load the provided docker images onto your Docker. Docker must be installed on your system. See https://docs.docker.com/install/ for details on Docker installation.
+
 Docker image file is stored on Zenodo :
 
 ```bash
@@ -50,8 +51,7 @@ The fastq preprocessed data are already in this github (MycPten/02_Seurat_analys
 - Experiment_analysis.rmd
   - Final integrate object, produce by Experiment_preprocessing, to launch the scRNAseq analysis : T-Seurat-merged_clean-subset
 
-> :warning: **Do not move any data**  When launching Experiment_preprocessing.rmd it will automatically detect if you run de 01_FASTQ_Preprocessing step and create output matrix. If not it will use our data in 02_Seurat_analysis/03_Data.
-
+> :warning: **Do not move any data.**  When launching Experiment_preprocessing.rmd it will automatically detect if you run de 01_FASTQ_Preprocessing step and create output matrix. If not it will use our data in 02_Seurat_analysis/03_Data.
 
 ```bash
 #Link to all data available for Seurat Analysis
@@ -67,17 +67,17 @@ wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636
 ```
 
 ### Run the R/Seurat analysis
-Analysis can be directly run inside docker containers by compiling Rmarkdown files. The Rmarkdown file knit compilation will launch the required analysis for the step and produce a final HTML report.
+Analysis can be directly run inside docker containers by compiling Rmarkdown files. The Rmarkdown file knit compilation will launch the required analysis and produce a final HTML report.
 You will need a function R script that can be download here:
 ```bash
 #Function download
   wget -P $WORKING_DIR/02_Seurat_analysis/01_Script https://zenodo.org/record/4636520/files/Workflow_function.R?download=1
 ```
 
-NB : An already generated report is available in the <WORKING_DIR>/1-Seurat_analysis/output.
+NB : An already generated report is available in xxx
 
 - Experiment_preprocessing.rmd <br/>
-You can either launch all the code (starting with count matrix in repository by default) or launch only part of the code with our intermediate Robj.
-If you want to launch only part of the code download necessary object and put it in the Output folder the script will automatically skip the unnecessary chunk.
+You can either run all the code (starting with count matrix in repository by default) or run only part of the code with our intermediate Robj.
+If you want to run only part of the code download the necessary object and put it in the Output folder the script will automatically skip the unnecessary chunk.
 - Seurat_analysis.Rmd <br/>
 Download and put in the Output folder the merge object (https://doi.org/10.5281/zenodo.4636520)

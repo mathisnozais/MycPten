@@ -7,6 +7,8 @@ Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosje
 Link to article : (TO come) put DOI
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)
+
+If you have any questions on this analysis, please contact [Mathis Nozais](mailto:nozais@ciml.univ-mrs.fr) or [Delphine Potier](mailto:potier@ciml.univ-mrs.fr)
 ---
 
 ### Overview
