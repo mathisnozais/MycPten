@@ -50,6 +50,9 @@ The fastq preprocessed data are already in this github (MycPten/02_Seurat_analys
 - Experiment_analysis.rmd
   - Final integrate object, produce by Experiment_preprocessing, to launch the scRNAseq analysis : T-Seurat-merged_clean-subset
 
+> :warning: **Do not move any data**  When launching Experiment_preprocessing.rmd it will automatically detect if you run de 01_FASTQ_Preprocessing step and create output matrix. If not it will use our data in 02_Seurat_analysis/03_Data.
+
+
 ```bash
 #Link to all data available for Seurat Analysis
   ## Preprocessed Seurat object for rep1 and 2
@@ -62,15 +65,6 @@ wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636
   ## Final integrate object
 wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636520/files/T-Seurat-merged_clean-subset.Robj?download=1
 ```
-<div class="panel panel-success">
-**Do's**
-{: .panel-heading}
-<div class="panel-body">
-
-THINGS TO DO
-
-</div>
-</div>
 
 ### Run the R/Seurat analysis
 Analysis can be directly run inside docker containers by compiling Rmarkdown files. The Rmarkdown file knit compilation will launch the required analysis for the step and produce a final HTML report.
