@@ -7,43 +7,48 @@ The Seurat analysis is divided in two script :
 - *Experiment_preprocessing.rmd* to load our data and obtain our final Seurat object before starting the scRNA seq analysis
 - *Experiment_analysis.rmd* to start the scRNA seq analysis
 
-Required data, builded Docker images and Robj are all available in SRA/GEO and Zenodo. Intructions to reproduce the analysis are provided below.
+You can also just generate the plot used in the paper :
+- *Figure.rmd*
+
+Required data, builded Docker images and Robj are all available in SRA/GEO and Zenodo. Instructions to reproduce the analysis are provided below.
 
 ---
 
 ## Setup the experiment
 ### Prerequisites
-Docker container images are available on zenodo : https://doi.org/10.5281/zenodo.4636520
+Docker container images are available on [zenodo](https://doi.org/10.5281/zenodo.4636520).
 
 In order to prepare the environment for analysis execution, it is required to:
 - Clone this github repository and set the WORKING_DIR variable
 - Download the RStudio / Seurat docker image tar file
 - Load the docker image on your system
-- Download files to perform the analysis on Zenodo https://doi.org/10.5281/zenodo.4636520
+- Download files to perform the analysis on [zenodo](https://doi.org/10.5281/zenodo.4636520)
 
 #### Clone Github repository
 Use your favorite method to clone this repository in a chosen folder.This will create a "MycPten" folder with all the source code. <br/>
-You must set an environment variable called WORKING_DIR with a value set to the path to this MycPten folder.
+You must set an environment variable called WORKING_DIR with a value set to the path to this Myc_Pten folder.
+For instance, if I clone the Git repository in "/home/nozais/workspace", then the WORKING_DIR variable will be set to :
 
-revoir cette histoire de workin dir quand clone a test
+```bash
+export WORKING_DIR=/home/nozais/workspace/Myc_Pten
+```
 
 #### Docker images
-Docker image tar file is stored on Zenodo. Open a shell ..... give instruction to where put it
-In order to execute analysis, you must load the provided docker images onto your Docker.Docker must be installed on your system. See https://docs.docker.com/install/ for details on Docker installation.
-give code example
+In order to execute analysis, you must load the provided docker images onto your Docker. Docker must be installed on your system. See https://docs.docker.com/install/ for details on Docker installation.
+Docker image file is stored on Zenodo :
 
 ```bash
 # To download Seurat301v2
-wget -P $WORKING_DIR/Images https://zenodo.org/record/4636520/files/Seurat301v2.tar?download=1
+wget -P $WORKING_DIR/Images/Docker https://zenodo.org/record/4636520/files/Seurat301v2.tar?download=1
 ```
 #### Download data
-The preprocessed data are already in this github (MycPten/02_Seurat_analysis/03_Data), alternatively you can download different files to start the analysis at different entry point:
+The fastq preprocessed data are already in this github (MycPten/02_Seurat_analysis/03_Data), alternatively you can download different files to start the analysis at different entry point:
 - Experiment_preprocessing.rmd
-  - Files after Fastq Preprocessing (count matrix) are already in github repository
+  - Files after Fastq Preprocessing (count matrix) are already in this repository
   - Preprocessed Seurat objects of each replicate
-  - First integration object Seurat-integrated_rep1_rep2
+  - First integration object : Seurat-integrated_rep1_rep2
 - Experiment_analysis.rmd
-  - Final integrate object to launch the scRNAseq analysis T-Seurat-merged_clean-subset
+  - Final integrate object, produce by Experiment_preprocessing, to launch the scRNAseq analysis : T-Seurat-merged_clean-subset
 
 ```bash
 #Link to all data available for Seurat Analysis
@@ -57,6 +62,15 @@ wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636
   ## Final integrate object
 wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636520/files/T-Seurat-merged_clean-subset.Robj?download=1
 ```
+<div class="panel panel-success">
+**Do's**
+{: .panel-heading}
+<div class="panel-body">
+
+THINGS TO DO
+
+</div>
+</div>
 
 ### Run the R/Seurat analysis
 Analysis can be directly run inside docker containers by compiling Rmarkdown files. The Rmarkdown file knit compilation will launch the required analysis for the step and produce a final HTML report.
