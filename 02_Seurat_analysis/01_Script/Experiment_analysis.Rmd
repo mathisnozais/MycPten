@@ -30,9 +30,10 @@ Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosje
 
 Link to article : (TO come)
 
-Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
+This code is made to be running on Seurat 301v2 Docker. Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
 
 Any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
+
 
 #to do before publish
 ```{r}
@@ -51,6 +52,7 @@ Any questions on this analysis, please contact Mathis Nozais or Delphine Potier 
 #CD8 vs CD4 remettre les calcul de fin marker pour le final et pas le load fichier qui est la poru gagner du temps
 
 #change output path
+
 ```
 
 
@@ -70,7 +72,6 @@ library(clusterProfiler)
 library(ggthemes)
 #library(scales)
 library(stringr)
-
 
 #Path to the analysis folder
 WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_repo/"
@@ -500,7 +501,7 @@ Seems to be Dp small (Cd4+,Cd8+,Rag1+)
 ### Radar plot
 ```{r}
 #check genotype proportion in each spleen clusters
-
+par(mfrow=c(1,2))
 df <- as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters),1)*100)))
 df$cluster = rownames(df)
 df2<-as.data.frame(t(cbind(rep(60,11),rep(0,11),df)[,1:6]))
@@ -522,6 +523,8 @@ df2 <- df2[c("22","17","10,16","6","7","8,2,3,23","20,18,14","21")]
 
 
 radarchart(df2, cglcol="grey", cglty=1,caxislabels=paste(seq(0,70,17.5),"%"), axistype = 0,axislabcol="grey40", cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 )
+
+#par(mfrow = c(1,1))
 ```
 ### Proportion bar plot
 ```{r}
@@ -589,27 +592,33 @@ dfcd8markers <-markers.use[order(markers.use$avg_logFC),]
 
 dfcd8markers$genename <- factor(dfcd8markers$genename, levels = dfcd8markers$genename[order(dfcd8markers$avg_logFC)])
 dfcd8markers$logpval <- log10(dfcd8markers$p_val_adj)
+```
 
+```{r,fig.width = 10, fig.height = 8}
 ggplot(dfcd8markers, aes(x = dfcd8markers$genename, y = dfcd8markers$avg_logFC, fill = logpval)) +   # Fill column
                               geom_bar(stat = "identity", width = .6) +   # draw the bars
                               ylim(-1.2,1.2)+
-                              labs(title="Try dGE") +
+                              labs(title="DGE - Cluster 1 vs 4 (Cd8 naive)",y ="Log fold change", x = "Genes differentially expressed") +
                               theme_tufte() +  # Tufte theme from ggfortify
                               theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
                                     axis.ticks = element_blank()) +
                                scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -120, breaks=c(-52,-120,-200),labels=c("-50","-120","-200"))+coord_flip() # Flip axes
 ```
+
 #### CD4
+
+define proportion of genotype in CD4 naive clusters :
 ```{r}
-#define proportion of genotype in CD4 naive clusters
 T.Seurat.spleen@meta.data$manualHTO = "nothing"
 Idents(T.Seurat.spleen) <- "MULTI_ID"
 T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "MULTI_ID", idents = c("Spleen-ctrl","Spleen-P")),]$manualHTO = "Spleen-ctrl&P"
 T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "MULTI_ID", idents = c("Spleen-M","Spleen-MP")),]$manualHTO = "Spleen-M&MP"
 
-prop.table(t(prop.table(table(T.Seurat.spleen@meta.data$integrated_snn_res.1.8,T.Seurat.spleen@meta.data$manualHTO),1)),2)*100
-#in our CD4 naive clusters (0,5 and 12) the one with most cells from M&MP is 0 and the one with most cells from ctrl&P is 12
+tab <- (prop.table(t(prop.table(table(T.Seurat.spleen@meta.data$integrated_snn_res.1.8,T.Seurat.spleen@meta.data$manualHTO),1)),2)*100)
+```
+In our CD4 naive clusters (0,5 and 12) the one with most cells from M&MP is 0 and the one with most cells from ctrl&P is 12
 
+```{r}
 Idents(T.Seurat) <- "integrated_snn_res.1.8"
 #DGE between 0 and 12
 dgecd4_data <- FindMarkers(T.Seurat, ident.1 = "0", ident.2 = "12",logfc.threshold=0)
@@ -624,16 +633,19 @@ dfcd4markers <-markers.use[order(markers.use$avg_logFC),]
 
 dfcd4markers$genename <- factor(dfcd4markers$genename, levels = dfcd4markers$genename[order(dfcd4markers$avg_logFC)])
 dfcd4markers$logpval <- log10(dfcd4markers$p_val_adj)
+```
 
+```{r,fig.width = 10, fig.height = 8}
 ggplot(dfcd4markers, aes(x = dfcd4markers$genename, y = dfcd4markers$avg_logFC, fill = logpval)) +   # Fill column
                               geom_bar(stat = "identity", width = .6) +   # draw the bars
                               ylim(-1.2,1.2)+
-                              labs(title="Try dGE CD4") +
+                              labs(title="DGE - Cluster 0 vs 12 (Cd4 naive)",y ="Log fold change", x = "Genes differentially expressed") +
                               theme_tufte() +  # Tufte theme from ggfortify
                               theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
                                     axis.ticks = element_blank()) +
                                scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -40, breaks=c(-12,-40,-57),labels=c("-10","-40","-60"))+ coord_flip() # Flip axes
 ```
+
 
 ### Functional profil analysis (Gene Ontology)
 ```{r}
@@ -658,15 +670,19 @@ backgroundrow <- rownames(background)
 genecomprow <- read.table("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/cluster1v4.txt", sep = "\t")
 genecomprow$x = as.character(genecomprow$x)
 genecomprow <- genecomprow[,1]
-####
 
 CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
-head (CPenrich)
+#head (CPenrich)
+```
 
+```{r,fig.width = 12, fig.height = 6}
 dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count") #+ coord_flip()+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
 
+```{r,fig.width = 12, fig.height = 8}
 emapplot(CPenrich, showCategory = 50)
 ```
+
 
 #### Naive CD4 T cells
 ```{r}
@@ -686,8 +702,12 @@ genecomprow <- genecomprow[,1]
 
 CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
 
+```
+
+```{r,fig.width = 9, fig.height = 6 }
 dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count")+ scale_y_discrete(labels=function(x)str_wrap(x, width=40))
 ```
+
 
 ### eYFP negative investigation
 Deciphering what are our eYFP negative cells on effector and memory CD8 T cells
@@ -735,7 +755,7 @@ tableauYFP$Cluster <- factor(tableauYFP$Cluster,levels = c("1","11","19"))
 tableauYFP$Genotypes <- factor(tableauYFP$Genotypes,levels = c("MycPten","Myc","Pten","Ctrl"))
 ```
 
-```{r}
+```{r,fig.width = 7, fig.height = 5}
 ggplot(tableauYFP, aes(x = Cluster, Genotypes)) +
         geom_tile(aes(fill = Values)) +
         scale_fill_gradient2( mid='yellow', high='red',limits=c(0,max(tableauYFP$Values)))+ theme_classic(base_size=20)
@@ -749,7 +769,7 @@ Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
 CD8sub <- subset(T.Seurat.spleen, idents = c("11","19","13"))
 Idents(CD8sub) <- "MULTI_ID"
 CD8sub@active.ident <- factor(CD8sub@active.ident,levels=c("Spleen-M","Spleen-MP","Spleen-ctrl","Spleen-P"))
-levels(CD8sub)
+#levels(CD8sub)
 ```
 
 ```{r}
@@ -757,7 +777,9 @@ DotPlot(CD8sub, dot.scale = 8,features = c("Tcrg-C1","Trdc","Trbc2","Trac","eYFP
 ```
 eyFP negative are coming from Myc and Myc Pten del mice and are Tgd cells.
 
-#Session Info
+<details>
+  <summary>**Session Info**</summary>
 ```{r}
 sessionInfo()
 ```
+</details>

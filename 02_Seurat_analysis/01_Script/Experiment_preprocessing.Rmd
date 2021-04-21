@@ -28,7 +28,7 @@ Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosje
 
 Link to article : (TO come)
 
-Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
+This code is made to be running on Seurat 301v2 Docker. Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
 
 If you have any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
 
@@ -1006,7 +1006,9 @@ ggplotly(DimPlot(T.Seurat, group.by = "MULTI_ID"))
 We obtain the final object with clustering to start the analysis
 ```
 
+<details>
+  <summary>**Session Info**</summary>
 ```{r}
 sessionInfo()
 ```
-
+</details>
