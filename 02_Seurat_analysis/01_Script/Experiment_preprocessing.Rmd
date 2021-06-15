@@ -5,8 +5,10 @@ output:
   html_document:
     code_folding: hide
     code_download: true
+knit: (function(inputFile, encoding) {rmarkdown::render(inputFile, encoding = encoding, output_dir = "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/02_Seurat_analysis/02_Output/Html_report")})
 editor_options: 
   chunk_output_type: console
+
 ---
 
 <style type="text/css">
@@ -41,7 +43,6 @@ If you have any questions on this analysis, please contact Mathis Nozais or Delp
 
 #change output path
 ```
-
 
 
 ```{r env_loading, include=FALSE}
@@ -85,7 +86,6 @@ print ("You are starting analysis from our two replicate Robj in order to do the
 part1 <- FALSE
 part2 <- TRUE
 }
-
 ```
 
 
@@ -131,7 +131,6 @@ hto1 <- as.matrix(hto1[,joint_bcs1])
 print (rownames(hto1))
 ```
 
-
 ```{asis, eval=(part1 == TRUE ), echo=TRUE}
 Looking to HTO distribution accross sample :
 ```
@@ -141,7 +140,7 @@ Looking to HTO distribution accross sample :
 par(mfrow=c(1,1))
 par(las=2)
 par(mar=c(5,15,3,3))
-barplot(rowSums(hto1), main = "sequenced HTO distribution", horiz=TRUE)
+barplot(rowSums(hto1), main = "Sequenced HTO distribution", horiz=TRUE)
 rowSums(hto1)
 ```
 
@@ -279,6 +278,7 @@ Here are the description of those parameters in the Seurat *CreateSeuratObject* 
 a <- length(colnames(hashtag1@assays$RNA@data))
 print(paste("After those filters, the remaining cell number is", a), quote = FALSE) 
 ```
+
 
 
 ```{r doublet_negative_removal, results='asis',eval=(part1 == TRUE ), echo=if (part1) TRUE else FALSE}

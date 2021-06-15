@@ -1,71 +1,375 @@
 ---
 title: "Figure"
 author: "Mathis"
-date: "2/5/2021"
-output: html_document
+date: "10/05/2021"
+output: 
+  html_document:
+    code_folding: hide
+    code_download: true
+knit: (function(inputFile, encoding) {rmarkdown::render(inputFile, encoding = encoding, output_dir = "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/02_Seurat_analysis/02_Output/Html_report")})
+editor_options: 
+  chunk_output_type: console
 ---
 
-Code to obtain all plot necessary to produce our figures :
+```{r}
+# TO DO BEFORE PUBLISH
+#change path output
 
-Load all object
+FeaturePlot(T.Seurat, features = "Nkg7",col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+```
 
+
+```{r}
+# REVIEW to check with DOMIE
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+T.Seurat@meta.data$manualclusters = "nothing"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "4"),]$manualclusters = "4"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "1"),]$manualclusters = "1"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "9"),]$manualclusters = "9"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "12"),]$manualclusters = "12"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "11"),]$manualclusters = "11"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "19"),]$manualclusters = "19"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "13"),]$manualclusters = "13"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "17"),]$manualclusters = "17"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = c("10","16")),]$manualclusters = "10,16"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "15"),]$manualclusters = "15"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = c("0","5")),]$manualclusters = "0,5"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "22"),]$manualclusters = "22"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "21"),]$manualclusters = "21"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = c("20","18","14")),]$manualclusters = "20,18,14"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = c("8","2","3","23")),]$manualclusters = "8,2,3,23"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "6"),]$manualclusters = "6"
+T.Seurat@meta.data[WhichCells(T.Seurat, slot = "integrated_snn_res.1.8", idents = "7"),]$manualclusters = "7"
+
+DimPlot(T.Seurat, group.by = "manualclusters")
+#cluster specific gene like Chopp et al
+Idents(T.Seurat) <- "manualclusters"
+Allmarker <- FindAllMarkers(T.Seurat)
+write.table(Allmarker,file="/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Allmarker.csv",sep="\t",quote=F)
+
+
+FeaturePlot(T.Seurat, features = "Myc",cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"),order=T)
+FeaturePlot(T.Seurat, features = "Myc",order=T,cols = c("lightyellow","red"))
+#almost no capture, regulon Myc 
+
+#SCENIC
+
+### SCRIPT FROM Robj_scenic_open.rmd
+## LOAD OUPUT FILES FROM PySCENIC
+motifs=read.csv("/home/nozaism/Workspace/02_Docker/Scenic/OUTPUT/motifs.csv")
+adjacencies=read.csv("/home/nozaism/Workspace/02_Docker/Scenic/OUTPUT/adjacencies-output.csv",sep="\t")
+regulons=read.table("/home/nozaism/Workspace/02_Docker/Scenic/OUTPUT/regulons.tsv",sep = "\t",header=T)
+aucmtx= t(read.csv("/home/nozaism/Workspace/02_Docker/Scenic/OUTPUT/aucell-output.csv",sep="\t",row.names = 1,header=T))
+
+DefaultAssay(T.Seurat) <- "integrated"
+#creer nouvel assay AUC et met data de AUC matrice
+#DefaultAssay(Seurat) <- "integrated"
+T.Seurat[["AUC"]] <- CreateAssayObject(counts = aucmtx[,colnames(T.Seurat)])
+
+#load all object with AUC
+#T.Seurat_rename <- readRDS("/home/nozaism/Workspace/05_M2_Rstudio/Tseurat_rename.RData")
+
+FeaturePlot(T.Seurat, features = "auc_Myc...",col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+
+#attention add mat et meth
+
+#clustering method
+#by default Louvain algorithm
+#We used the Seurat graph based clustering algorithm to identify clusters of cells (using 12 dimensions and 
+#a coarse grained resolution of 1)
+
+#We used FindClusters function, wich use SNN (or/and KNN ??) and Louvain algorithm for optimization, to identify clusters of cells (using 12 dimensions and 
+#a coarse grained resolution of 1)
+#used k-means clustering
+
+
+
+# TO keep
+FeaturePlot(T.Seurat,features = c("Sell","Nkg7"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(T.Seurat,features = c("Cd4","Cd8b1"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+# DN and DP 
+FeaturePlot(T.Seurat,features = c("Ptcra","Trac","Trbc1"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(T.Seurat,features = c("Il2ra","Tcf7"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+
+#DP blast
+FeaturePlot(T.Seurat,features = c("Cdk1","Pcna","Mki67"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#Dp small
+FeaturePlot(T.Seurat,features = c("Rag1"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#chemo recept
+FeaturePlot(T.Seurat,features = c("Ccr9","Ccr7"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#DP vs SP
+FeaturePlot(T.Seurat,features = c("Ccnd3","Ccnd2"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(T.Seurat,features = c("Dntt"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#early SP
+FeaturePlot(T.Seurat,features = c("Cd69"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#CD8 SP
+FeaturePlot(T.Seurat,features = c("Ly6c2"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(T.Seurat,features = c("Gzma","Ccl5"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#naive SP
+FeaturePlot(T.Seurat,features = c("Ccr7"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+#Treg
+FeaturePlot(T.Seurat,features = c("Ikzf2","Il2ra","Foxp3"),col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+
+# Signature from chopp
+
+cd8_features <- list(c('Ahnak','Bace1','Amica1','Atp8b4','Cd226','Adgrg5','Icam1','Cd7','Cst7','Ctsw','Il2rb', 'Runx3', 'Cxcr6','Plac8', 'Itgae', 'Ly6c2','Nkg7', 'Prf1','Tspan9','Limk1','Klrd1','Chst15','Basp1'))
+
+
+Btbd11
+Ccdc102a
+Cyth4
+Ehd1
+Eng
+Ggt1
+Glipr2
+Gpr68
+Tagln2
+
+
+
+cd4_features <- list(c("Dusp1","Dusp5","Extl3","Gata3","Got1","Gpr183","Gpr83","Id2","Igfbp4","Il17rb","Il6ra","Il7r","Itgb3","Itm2a"))
+
+#IM CD8
+IM8_features <- list(c("B2m","Satb1","Tuba4a","Ccr9","Cd8b1","Cd8a","Slfn2","Tubb5","Rhoh","Rgcc","Gimap6","Bzw2","Lztfl1","Sept9","Emb","Actn1","Ubac2","Sepp1","Anapc5","Hmgn2"))
+
+
+
+
+
+
+
+
+test <- AddModuleScore(T.Seurat, features =IM8_features, name="IMCD8" )
+
+FeaturePlot(test, features = "signature1",col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(test, features = "IMCD81",col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+
+
+
+##### modif delphine domie
+FeaturePlot(T.Seurat,features = "percent.mito",col=c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
+FeaturePlot(T.Seurat,features = "percent.mito")
+
+VlnPlot(T.Seurat, group.by = "integrated_snn_res.1.8",features = "percent.mito")
+VlnPlot(T.Seurat, group.by = "manualclusters",features = "percent.mito")
+
+#bar plot cluster 6
+DimPlot(T.Seurat.thymus)
+
+Idents(T.Seurat.thymus) <- "manualclusters"
+T.Seurat.thymusbar <- subset(T.Seurat.thymus,  idents = c("6")) #to only keep cluster needed for the plot
+
+data4 <- data.frame(t(prop.table(table(T.Seurat.thymusbar@meta.data$HTO,T.Seurat.thymusbar@meta.data$manualclusters),2))*100)
+
+Cluster <- data4$Var1
+HTO <- data4$Var2
+Percentage <- data4$Freq
+# Stacked bar plot
+cols <- c("Myc- PTEN- thymus" = "#FF99FF", "MYC- thymus" = "coral1", "PTEN- thymus" = "cyan3", "WT thymus" = "chartreuse3")
+ggplot(data4, aes(fill=HTO, y=Percentage, x=Cluster)) + 
+    geom_bar(position="stack", stat="identity", width=0.7)+
+   xlab("Thymic Clusters")+ylab("Percentage")+ theme(legend.position="bottom")+scale_fill_manual(values =cols, labels=c("Myc Pten","Myc","Pten","WT")) +theme_light()+geom_hline(yintercept=c(25,50,75), linetype="dashed", color = "grey60")
+
+
+datathym <- data.frame(prop.table(t(prop.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters),1)),1)*100)
+
+df1 <- datathym[6,]
+df2 <- datathym[14,]
+df3 <- datathym[22,]
+df4 <- datathym[30,]
+
+dfcluster6 <- rbind(df1,df2,df3,df4)
+
+Cluster <-dfcluster6$Var1
+HTO <- dfcluster6$Var2
+Percentage <- dfcluster6$Freq
+# Stacked bar plot
+cols <- c("Myc- PTEN- thymus" = "#FF99FF", "MYC- thymus" = "coral1", "PTEN- thymus" = "cyan3", "WT thymus" = "chartreuse3")
+ggplot(dfcluster6, aes(fill=HTO, y=Percentage, x=Cluster)) + 
+    geom_bar(position="stack", stat="identity", width=0.7)+
+   xlab("Thymic Clusters")+ylab("Percentage")+ theme(legend.position="bottom")+scale_fill_manual(values =cols, labels=c("Myc Pten","Myc","Pten","WT")) +theme_light()+geom_hline(yintercept=c(25,50,75), linetype="dashed", color = "grey60")
+```
+
+
+
+This Rmarkdown contain code to obtain all plot necessary to produce our bioinformatical related figures. Final figure anotation and layout were then produce with inkscape.
+
+```{r,include=FALSE}
+OUTPUT_PATH <- ("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Output_repo/")
+
+library(Seurat)
+library(gridExtra)
+library(ggplot2)
+library(fmsb)
+library(graphics)
+library(ggthemes)
+library(clusterProfiler)
+library (stringr)
+#Path to the analysis folder
+WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/"
+```
+
+```{r,include=FALSE}
+#Zenodo submited objects are not complete, and all the figures can't be produce if Experiment_analysis.rmd wasn't run before. This chunk correct the problem
+
+if(! file.exists(paste0(OUTPUT_PATH, "T-Seurat-merged_final",".Robj"))){
+print("Creating final R objects from Experiment_Analysis.Rmd to produce figures")
+## CREATE FINAL OBJECT
+  # Thymic and splenic obj
+    load(paste0(OUTPUT_PATH, "T-Seurat-merged_clean-subset",".Robj"))
+    Idents(T.Seurat) <- "HTO"
+    T.Seurat.thymus <- subset(T.Seurat, idents = c("Myc- PTEN- thymus","MYC- thymus","PTEN- thymus","WT thymus"))
+    a <- t(margin.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$integrated_snn_res.1.8),2))
+    T.Seurat.spleen <- subset(T.Seurat, idents = c("Myc- PTEN- spleen","MYC- spleen","PTEN- spleen","WT spleen"))
+    b <- t(margin.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$integrated_snn_res.1.8),2))
+    c <- t((a/(a+b)*100))
+
+    #Thymic populations
+    thymus.clusters <- rownames(as.data.frame(c[which(c[,1]>25),]))
+    Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
+    T.Seurat.thymus <- subset(T.Seurat.thymus, idents = thymus.clusters)
+    DimPlot(T.Seurat.thymus)+ggtitle("Thymic subset")
+    
+    spleen.clusters <- rownames(as.data.frame(c[which(c[,1]<75),]))
+    Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+    T.Seurat.spleen <- subset(T.Seurat.spleen, idents = spleen.clusters)
+    DimPlot(T.Seurat.spleen)+ggtitle("Splenic subset")
+    
+  # Add tissue annotation for final merge object
+    spleen.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Spleen-P" )))
+
+    thymus.cells <- c(row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-ctrl" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-M" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-MP" )),row.names(subset(T.Seurat@meta.data, MULTI_ID == "Thymus-P" )))
+
+    T.Seurat@meta.data$tissue = "nothing"
+    T.Seurat@meta.data[spleen.cells,]$tissue = "Spleen"
+    T.Seurat@meta.data[thymus.cells,]$tissue = "Thymus"
+  # Add manual clustering annotation for final merge object
+    #Regroup thymic clusters
+    #Similar cluster are annotate as one
+    Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
+    T.Seurat.thymus@meta.data$manualclusters = "nothing"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "22"),]$manualclusters = "22"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "21"),]$manualclusters = "21"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("20","18","14")),]$manualclusters = "20,18,14"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("8","2","3","23")),]$manualclusters = "8,2,3,23"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "6"),]$manualclusters = "6"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "7"),]$manualclusters = "7"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = c("10","16")),]$manualclusters = "10,16"
+    T.Seurat.thymus@meta.data[WhichCells(T.Seurat.thymus, slot = "integrated_snn_res.1.8", idents = "17"),]$manualclusters = "17"
+    
+    #Regroup splenic clusters
+    #Similar cluster are annotate as one
+    Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
+    T.Seurat.spleen@meta.data$manualclusters = "nothing"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "4"),]$manualclusters = "4"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "1"),]$manualclusters = "1"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "9"),]$manualclusters = "9"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "12"),]$manualclusters = "12"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "11"),]$manualclusters = "11"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "19"),]$manualclusters = "19"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "13"),]$manualclusters = "13"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "17"),]$manualclusters = "17"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = c("10","16")),]$manualclusters = "10,16"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = "15"),]$manualclusters = "15"
+    T.Seurat.spleen@meta.data[WhichCells(T.Seurat.spleen, slot = "integrated_snn_res.1.8", idents = c("0","5")),]$manualclusters = "0,5"
+    
+    #Save final object used after in this code and for figure.Rmd
+    save(T.Seurat, file = paste0(OUTPUT_PATH, "T-Seurat-merged_final", ".Robj"))
+    save(T.Seurat.spleen, file = paste0(OUTPUT_PATH, "T-Seurat-spleen_final", ".Robj"))
+    save(T.Seurat.thymus, file = paste0(OUTPUT_PATH, "T-Seurat-thymus_final", ".Robj"))
+    
+}else{
+print("Loading final R objects produce in Experiment_Analysis.Rmd to produce figures")
+load(paste0(OUTPUT_PATH, "T-Seurat-merged_final",".Robj"))
+load(paste0(OUTPUT_PATH, "T-Seurat-spleen_final",".Robj"))
+load(paste0(OUTPUT_PATH, "T-Seurat-thymus_final",".Robj"))
+}
+```
+
+### FIGURE 2 {.tabset}
+#### Panel A
 ```{r}
 # Highlight specific HTO  6x4
 Idents(T.Seurat) <- "MULTI_ID"
 cellM <- WhichCells(T.Seurat, idents = c("Spleen-M","Thymus-M") )
-DimPlot(T.Seurat,cells.highlight = cellM,sizes.highlight = 0.5,cols = "grey80", cols.highlight = "coral2",pt.size = 0.5)+ NoLegend()+NoAxes()
+plotM <- DimPlot(T.Seurat,cells.highlight = cellM,sizes.highlight = 0.5,cols = "grey80", cols.highlight = "coral2",pt.size = 0.5)+ NoLegend()+NoAxes()
 
 cellctrl <- WhichCells(T.Seurat, idents = c("Spleen-ctrl","Thymus-ctrl") )
-DimPlot(T.Seurat,cells.highlight = cellctrl,sizes.highlight = 0.5,cols = "grey80", cols.highlight="chartreuse4",pt.size = 0.5)+ NoLegend()+NoAxes()
+plotC <- DimPlot(T.Seurat,cells.highlight = cellctrl,sizes.highlight = 0.5,cols = "grey80", cols.highlight="chartreuse4",pt.size = 0.5)+ NoLegend()+NoAxes()
 
 cellMP <- WhichCells(T.Seurat, idents = c("Spleen-MP","Thymus-MP") )
-DimPlot(T.Seurat,cells.highlight = cellMP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="#CC0099",pt.size = 0.5)+ NoLegend()+NoAxes()
+plotMP <- DimPlot(T.Seurat,cells.highlight = cellMP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="#CC0099",pt.size = 0.5)+ NoLegend()+NoAxes()
 
 cellP <- WhichCells(T.Seurat, idents = c("Spleen-P","Thymus-P") )
-DimPlot(T.Seurat,cells.highlight = cellP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="deepskyblue3",pt.size = 0.5)+ NoLegend()+NoAxes()
-```
+plotP <- DimPlot(T.Seurat,cells.highlight = cellP,sizes.highlight = 0.5,cols = "grey80", cols.highlight="deepskyblue3",pt.size = 0.5)+ NoLegend()+NoAxes()
 
-```{r}
 #thymus vs rate figure
-DimPlot(T.Seurat, group.by = "tissue",cols=c("darkgoldenrod1","darkred"),pt.size = 0.5)+ NoLegend()+NoAxes()
+plotorgan <- DimPlot(T.Seurat, group.by = "tissue",cols=c("darkgoldenrod1","darkred"),pt.size = 0.5)+ NoLegend()+NoAxes()
 ```
 
-```{r}
+```{r,fig.width = 8, fig.height = 10}
+panA <- grid.arrange(plotM, plotP,plotMP,plotC,plotorgan, nrow = 3)
+```
+
+#### Panel B
+```{r panelB,fig.width = 8, fig.height = 6, message=FALSE, warning=FALSE}
 Idents(T.Seurat) <- "integrated_snn_res.1.8"
 umapcols <- c("#99A6E7","#E3B1D6","#F78754","#F94A17","#CC79B7","#6477D8","#919296","#CF063A","#FEA981","#55AC7C","#5F4090","#D13A7C","#1332D0","#EC0067","#FB710D","#09B329","#B23ACE","#7A1E45","#FB920D","#FF35AC","#FBAF0D","#ECB90C","#FFDA0D","#E22611")
 
 
 DimPlot(T.Seurat, reduction = "umap", group.by = "integrated_snn_res.1.8", pt.size = 1,cols = umapcols)+ NoLegend()
+panB <- DimPlot(T.Seurat, reduction = "umap", group.by = "integrated_snn_res.1.8", pt.size = 1,cols = umapcols)+ NoLegend()
 ```
 
-## Dot plot thymus
-```{r}
+#### Panel C
+```{r, message=FALSE, warning=FALSE}
+#Dotplot thymus
 Idents(T.Seurat.thymus) <- "manualclusters"
 T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20,18,14","8,2,3,23","7","6","10,16","17"))
 levels(T.Seurat.thymus)
 
-DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
+dotplotthym <- DotPlot(T.Seurat.thymus, dot.scale = 14,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
+   legend.text = element_text(size = 20),
+  legend.title = element_text(size = 25),
+  axis.text.x = element_text(size = 20,angle = 90),
+  axis.text.y = element_text(size = 20),
+  axis.title = element_text(size = 25),
   panel.background = element_rect(fill = "grey65",
                                 size = 0.5, linetype = "solid"),
   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
                                 colour = "grey55"))
-
+#dot scale was 8 but change for rmarkdown output
 ```
-## Dot plot spleen
-```{r}
+
+```{r, message=FALSE, warning=FALSE}
+# Dotplot spleen
 Idents(T.Seurat.spleen) <- "manualclusters"
 
 T.Seurat.spleen@active.ident <- factor(T.Seurat.spleen@active.ident,levels=c("10,16","1","4","0,5","12","15","9","17","13","11","19"))
-DotPlot(T.Seurat.spleen, dot.scale = 8, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+dotplotspleen <- DotPlot(T.Seurat.spleen, dot.scale = 14, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
+  legend.text = element_text(size = 20),
+  legend.title = element_text(size = 25),
+  axis.text.x = element_text(size = 20,angle = 90),
+  axis.text.y = element_text(size = 20),
+  axis.title = element_text(size = 25),
   panel.background = element_rect(fill = "grey65",
                                 size = 0.5, linetype = "solid"),
   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
                                 colour = "grey55")) + coord_flip()
+#dot scale was 8 but change for rmarkdown output
 ```
 
-## Myc shift
-### Radar plot
+```{r,fig.width = 20, fig.height = 10}
+#Combine dotplot
+panC <- grid.arrange(dotplotthym,dotplotspleen, ncol = 2)
+```
+
+#### Panel D
 ```{r}
+#check par
+par(oma = c(0, 0, 0, 0))
+par(mar = c(0,1,0,1))
+par(mfrow=c(1,2))
 #check genotype proportion in each spleen clusters
 
 df <- as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters),1)*100)))
@@ -76,7 +380,7 @@ rownames(df2[1:2,]) <- c("60","0")
 #order data frame
 df2 <- df2[c("10,16","19","11","13","17","9","15","12","0,5","4","1")]
 
-radarchart(df2, cglcol="grey", cglty=1 ,cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 ,caxislabels=paste(seq(from = 0,to = 60,by = 15),"%"), axislabcol = "grey40", axistype = 0)
+radarspleen <- radarchart(df2, cglcol="grey", cglty=1 ,cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 ,caxislabels=paste(seq(from = 0,to = 60,by = 15),"%"), axislabcol = "grey40", axistype = 0)
 
 #check genotype proportion in each thymic cluster
 df <-  as.data.frame(as.data.frame.matrix(t(prop.table(table(T.Seurat.thymus@meta.data$HTO,T.Seurat.thymus@meta.data$manualclusters),1)*100)))
@@ -88,35 +392,206 @@ rownames(df2[1:2,]) <- c("65","0")
 df2 <- df2[c("22","17","10,16","6","7","8,2,3,23","20,18,14","21")]
 
 
-radarchart(df2, cglcol="grey", cglty=1,caxislabels=paste(seq(0,70,17.5),"%"), axistype = 0,axislabcol="grey40", cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 )
+radarthymus <- radarchart(df2, cglcol="grey", cglty=1,caxislabels=paste(seq(0,70,17.5),"%"), axistype = 0,axislabcol="grey40", cglwd=0.8, vlcex=0.8, pcol=c("#FF99FF","coral1","cyan3","chartreuse3") , plwd=3, plty=1 ) 
+
 ```
 
-#Supplementary
+```{r,include=FALSE}
+#reset par
+dev.off()  
+```
+
+### Figure 4 {.tabset}
+#### Panel A
+```{r}
+Idents(T.Seurat.spleen) <- "manualclusters"
+T.Seurat.spleenbar <- subset(T.Seurat.spleen,  idents = c("0,5","9","1","11","19")) #to only keep cluster needed for the plot
+data3 <- data.frame(prop.table(t(prop.table(table(T.Seurat.spleenbar@meta.data$HTO,T.Seurat.spleenbar@meta.data$manualclusters),1)),1)*100)
+
+#order cluster level
+data3$Var1 <- factor(data3$Var1, levels = c("0,5","9","1","11","19"))
+
+cellnumber <- data.frame(colSums(table(T.Seurat.spleen@meta.data$HTO,T.Seurat.spleen@meta.data$manualclusters)) )
+cellnumber$cluster <- rownames(cellnumber)
+row_order <-c("0,5","9","1","11","19")
+cellnumber <- cellnumber[row_order,]
+
+Cluster <- data3$Var1
+HTO <- data3$Var2
+Percentage <- data3$Freq
+text <- cellnumber$colSums.table.T.Seurat.spleen.meta.data.HTO..T.Seurat.spleen.meta.data.manualclusters..
+# Stacked bar plot
+cols <- c("Myc- PTEN- spleen" = "#FF99FF", "MYC- spleen" = "coral1", "PTEN- spleen" = "cyan3", "WT spleen" = "chartreuse3")
+
+ggplot(data3, aes(fill=HTO, y=Percentage, x=Cluster)) + 
+    geom_bar(position="stack", stat="identity", width=0.7)+
+   xlab("Splenic Clusters")+ylab("Percentage")+ theme(legend.position="bottom")+scale_fill_manual(values =cols, labels=c("Myc Pten","Myc","Pten","WT")) +theme_light()+geom_hline(yintercept=c(25,50,75), linetype="dashed", color = "grey60")+ annotate("text", x = c(1,2,3,4,5), y=103, label = c(text))
+```
+
+#### Panel B
+```{r}
+# On cluster 11 - cd8 memory
+C11Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11Ctrl])
+C11Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11Pt])
+C11MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11MP])
+C11M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "11",])
+mC11M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C11M])
+#on cluster 19 - cd8 eff term
+C19Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19Ctrl])
+C19Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19Pt])
+C19MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19MP])
+C19M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "19",])
+mC19M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C19M])
+#on cluster 1
+C1Ctrl <-rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-ctrl" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1Ctrl <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1Ctrl])
+C1Pt <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-P" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1Pt <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1Pt])
+C1MP <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-MP" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1MP <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1MP])
+C1M <- rownames(T.Seurat.spleen@meta.data[T.Seurat.spleen@meta.data$MULTI_ID == "Spleen-M" & T.Seurat.spleen@meta.data$integrated_snn_res.1.8 == "1",])
+mC1M <- mean(T.Seurat.spleen@assays$RNA@data["eYFP",C1M])
+
+
+l1 <- c("1","1","1","1","11","11","11","11","19","19","19","19")
+l2 <- c("Ctrl","Pten","Myc","MycPten","Ctrl","Pten","Myc","MycPten","Ctrl","Pten","Myc","MycPten")
+l3 <- c(mC1Ctrl,mC1Pt,mC1M,mC1MP,mC11Ctrl,mC11Pt,mC11M,mC11MP,mC19Ctrl,mC19Pt,mC19M,mC19MP)
+
+tableauYFP <- data.frame(Cluster = l1, Genotypes =l2) 
+tableauYFP <- cbind(tableauYFP,Values = l3)
+
+
+tableauYFP$Cluster <- factor(tableauYFP$Cluster,levels = c("1","11","19"))
+tableauYFP$Genotypes <- factor(tableauYFP$Genotypes,levels = c("MycPten","Myc","Pten","Ctrl"))
+
+ggplot(tableauYFP, aes(x = Cluster, Genotypes)) +
+        geom_tile(aes(fill = Values)) +
+        scale_fill_gradient2( mid='yellow', high='red',limits=c(0,max(tableauYFP$Values)))+ theme_classic(base_size=20)
+```
+
+### Supplementary 2 {.tabset}
+#### Panel A
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+#DGE between our two CD8 naive clusters
+#write.table(dgecd8_data,file=paste(WORKSPACE, "02_Seurat_analysis/01_Script/dgeCD8data.txt",sep=""),sep="\t",quote=F)
+dgecd8_data <- read.table(paste(WORKSPACE, "02_Seurat_analysis/01_Script/dgeCD8data.txt",sep=""), sep = "\t")
+# bar plot
+#add abs value to table
+dgecd8_data$abs <- abs(dgecd8_data$avg_logFC) 
+
+dgecd8_data$genename <- rownames(dgecd8_data)
+# Select markers for plotting on a Heatmap 
+markers.use=subset(dgecd8_data, p_val_adj<1e-50 & abs>0.20)
+dfcd8markers <-markers.use[order(markers.use$avg_logFC),]
+
+dfcd8markers$genename <- factor(dfcd8markers$genename, levels = dfcd8markers$genename[order(dfcd8markers$avg_logFC)])
+dfcd8markers$logpval <- log10(dfcd8markers$p_val_adj)
+```
+
+```{r,fig.width = 10, fig.height = 8}
+ggplot(dfcd8markers, aes(x = dfcd8markers$genename, y = dfcd8markers$avg_logFC, fill = logpval)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              ylim(-1.2,1.2)+
+                              labs(title="DGE - Cluster 1 vs 4 (Cd8 naive)",y ="Log fold change", x = "Genes differentially expressed") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+                                    axis.ticks = element_blank()) +
+                               scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -120, breaks=c(-52,-120,-200),labels=c("-50","-120","-200"))+coord_flip() # Flip axes
+```
+
+
+#### Panel B
 
 ```{r}
-#Dot plot identif thymus et spleen sans cluster regroupé
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+#DGE between 0 and 12
+#write.table(dgecd4_data,file=paste(WORKSPACE, "02_Seurat_analysis/01_Script/dgeCD4data.txt",sep=""),sep="\t",quote=F)
+dgecd4_data <- read.table(paste(WORKSPACE, "02_Seurat_analysis/01_Script/dgeCD4data.txt",sep=""), sep = "\t")
+# bar plot
+#add abs value to table
+dgecd4_data$abs <- abs(dgecd4_data$avg_logFC) 
 
-## Dot plot thymus
-## Setting thymic cluster order
-Idents(T.Seurat.thymus) <- "integrated_snn_res.1.8"
-T.Seurat.thymus@active.ident <- factor(T.Seurat.thymus@active.ident,levels=c("22","21","20","18","14","8","2","3","23","7","6","10","16","17"))
-levels(T.Seurat.thymus)
+dgecd4_data$genename <- rownames(dgecd4_data)
+# Select markers for plotting on a Heatmap 
+markers.use=subset(dgecd4_data,p_val_adj<1e-10 & abs>0.2)
+dfcd4markers <-markers.use[order(markers.use$avg_logFC),]
 
-DotPlot(T.Seurat.thymus, dot.scale = 8,features = c("percent.mito","Bmf","Trp53inp1","Tox2","Cd5","Cd69","Cd27","Rag1","Rag2","Cd4","Cd8a","Cd8b1","Mki67","Cdk1","Ptcra","Il2ra","Cd34")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + coord_flip()+ theme(
-  panel.background = element_rect(fill = "grey65",
-                                size = 0.5, linetype = "solid"),
-  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
-                                colour = "grey55"))
+dfcd4markers$genename <- factor(dfcd4markers$genename, levels = dfcd4markers$genename[order(dfcd4markers$avg_logFC)])
+dfcd4markers$logpval <- log10(dfcd4markers$p_val_adj)
 
-## Dot plot spleen
-## Setting splenic cluster order 
+```
+
+
+```{r,fig.width = 10, fig.height = 8}
+ggplot(dfcd4markers, aes(x = dfcd4markers$genename, y = dfcd4markers$avg_logFC, fill = logpval)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              ylim(-1.2,1.2)+
+                              labs(title="DGE - Cluster 0 vs 12 (Cd4 naive)",y ="Log fold change", x = "Genes differentially expressed") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+                                    axis.ticks = element_blank()) +
+                               scale_fill_gradient2(low='red', mid='orange', high='blue',midpoint = -40, breaks=c(-12,-40,-57),labels=c("-10","-40","-60"))+ coord_flip() # Flip axes
+```
+
+
+#### Panel C
+
+```{r}
+Idents(T.Seurat) <- "integrated_snn_res.1.8"
+
+# get all gene name express in our cells as background
+background <- T.Seurat@assays$RNA@meta.features
+backgroundrow <- rownames(background)
+```
+
+```{r,message=FALSE,warning=FALSE}
+genecomprow <- read.table(paste(WORKSPACE, "02_Seurat_analysis/01_Script/cluster1v4.txt",sep=""), sep = "\t")
+genecomprow$x = as.character(genecomprow$x)
+genecomprow <- genecomprow[,1]
+
+CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
+#head (CPenrich)
+
+```
+
+```{r,fig.width = 12, fig.height = 6}
+dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count") #+ coord_flip()+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+#### Panel D
+
+```{r}
+genecomprow <- read.table(paste(WORKSPACE, "02_Seurat_analysis/01_Script/cluster0vs12.txt",sep=""), sep = "\t")
+genecomprow$x = as.character(genecomprow$x)
+genecomprow <- genecomprow[,1]
+####
+
+
+CPenrich <- enrichGO(gene= genecomprow, OrgDb = 'org.Mm.eg.db', ont="BP",keyType = "SYMBOL",universe = backgroundrow) # org.Mm.eg.db genome mouse
+```
+
+```{r,fig.width = 9, fig.height = 6 }
+dotplot(CPenrich, showCategory=15,color = "p.adjust",x="count")+ scale_y_discrete(labels=function(x)str_wrap(x, width=40))
+```
+
+### Supplementary 3
+#### Panel A
+```{r}
+#DOT plot eyFP and TGD on CD8 effector and memory
 Idents(T.Seurat.spleen) <- "integrated_snn_res.1.8"
-T.Seurat.spleen@active.ident <- factor(T.Seurat.spleen@active.ident,levels=c("10","16","1","4","0","5","12","15","9","17","13","11","19"))
+CD8sub <- subset(T.Seurat.spleen, idents = c("11","19","13"))
+Idents(CD8sub) <- "MULTI_ID"
+CD8sub@active.ident <- factor(CD8sub@active.ident,levels=c("Spleen-M","Spleen-MP","Spleen-ctrl","Spleen-P"))
+#levels(CD8sub)
+```
 
-
-DotPlot(T.Seurat.spleen, dot.scale = 8, features= c("Foxp3","Aes","Anxa1","Gzma","Ccl5","Cxcr3","Sell","S1pr1","Ccr7","Trdc","Tcrg-C4","Tcrg-C2","Tcrg-C1","Trbc2","Trbc1","Trac","Cd8b1","Cd4")) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red") + theme(
-  panel.background = element_rect(fill = "grey65",
-                                size = 0.5, linetype = "solid"),
-  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
-                                colour = "grey55")) + coord_flip()
+```{r, message=FALSE,warning=FALSE}
+DotPlot(CD8sub, dot.scale = 8,features = c("Tcrg-C1","Trdc","Trbc2","Trac","eYFP") ) + scale_colour_gradient2(low = "steelblue", mid = "white", high = "red")+ ggtitle("CD8 memory and effector clusters")
 ```

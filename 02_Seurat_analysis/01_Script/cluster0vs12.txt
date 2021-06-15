@@ -1,0 +1,25 @@
+x
+1	Rps19
+2	Rpl13
+3	Rps18
+4	Rpl32
+5	Rplp0
+6	Rps5
+7	Rps28
+8	Dapl1
+9	Rpl18a
+10	Rps6
+11	Rps4x
+12	Rps8
+13	Rps2
+14	Rps14
+15	Rpl17
+16	Rps7
+17	Rps24
+18	Rpsa
+19	Rpl12
+20	Rpl39
+21	Rpl23
+22	Rps20
+23	Rps16
+24	Rpl8
