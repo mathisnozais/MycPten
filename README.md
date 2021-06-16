@@ -2,13 +2,14 @@
 
 Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosjean1, Noémie Gentil1, Julie Quessada1, Cyrille Mionnet1, Delphine Potier1@ & Dominique Payet-Bornet1@
 
-*These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
+\*These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
 Link to article : (TO come) put DOI
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)
 
 If you have any questions on this analysis, please contact [Mathis Nozais](mailto:nozais@ciml.univ-mrs.fr) or [Delphine Potier](mailto:potier@ciml.univ-mrs.fr)
+
 ---
 
 ### Overview
@@ -23,7 +24,7 @@ In order to re do Seurat Analysis you can follow guidelines and script here : [0
 
 ### Data Availability
 #### Fastq preprocessing
-- 10 Fastq are availabe in SRA under the accession ID *xxxxxxx*
+- 10 Fastq are availabe in SRA under the accession ID *SRP311697*
   - 4 Fastq files containing paired-end reads sequenced from the mRNA library of replicate 1 and 2
   - 4 Fastq files containing paired-end reads sequenced from the HTO library of replicate 1 and 2
   - 2 Fastq files containing paired-end reads sequenced from the ADT library of replicate 2
