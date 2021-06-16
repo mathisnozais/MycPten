@@ -69,6 +69,8 @@ wget -P $WORKING_DIR/02_Seurat_analysis/02_Output https://zenodo.org/record/4636
 ### Run the R/Seurat analysis
 Analysis can be directly run inside docker containers by compiling Rmarkdown files. The Rmarkdown file knit compilation will launch the required analysis and produce a final HTML report.
 You will need a function R script that can be download here:
+
+//// add a command to ask to change WORKING_DIR inside R ??? a voir Delphine ///
 ```bash
 #Function download
   wget -P $WORKING_DIR/02_Seurat_analysis/01_Script https://zenodo.org/record/4636520/files/Workflow_function.R?download=1

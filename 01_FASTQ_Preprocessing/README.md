@@ -17,16 +17,15 @@ In order to prepare the environment for analysis execution, it is required to:
 - Download raw files to perform the analysis
 
 #### Clone Github repository
-Use your favorite method to clone this repository in a chosen folder.This will create a "MycPten" folder with all the source code. <br/>
-You must set an environment variable called WORKING_DIR with a value set to the path to this Myc_Pten folder.
-For instance, if I clone the Git repository in "/home/nozais/workspace", then the WORKING_DIR variable will be set to :
+Use your favorite method to clone this repository in a chosen folder. This will create a "MycPten" folder with all the source code. <br/>
+You must set an environment variable called WORKING_DIR with a value set to the path to this Myc_Pten folder. For instance, if I clone the Git repository in "/home/nozais/workspace", then the WORKING_DIR variable will be set to :
 
 ```bash
 export WORKING_DIR=/home/nozais/workspace/Myc_Pten
 ```
 
 #### Reference Genome
-The original version of the tanscriptome used is available at 10xGenomics website (http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz). We modify it in order to add eYFP. The mm10-eYFP transcriptome can be download in Zenodo.
+The original version of the tanscriptome used is available at 10xGenomics website (http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz). We modify it in order to add eYFP. Thus the mm10-eYFP transcriptome can be download in Zenodo.
 
 ```bash
 #Download the eYFP-transcriptome files to the reference folder
@@ -66,7 +65,7 @@ To processed with CITEseq Count:
 wget $WORKING_DIR/03_Data/Fastq/ link SRA
 wget $WORKING_DIR/03_Data/Fastq/
 wget $WORKING_DIR/03_Data/Fastq/
-wget $WORKING_DIR/03_Data/Fastq/ 
+wget $WORKING_DIR/03_Data/Fastq/
 ```
 
 ### Run the Fastq preprocessing
