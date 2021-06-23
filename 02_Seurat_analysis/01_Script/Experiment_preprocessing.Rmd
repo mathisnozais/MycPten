@@ -5,7 +5,6 @@ output:
   html_document:
     code_folding: hide
     code_download: true
-knit: (function(inputFile, encoding) {rmarkdown::render(inputFile, encoding = encoding, output_dir = "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/02_Seurat_analysis/02_Output/Html_report")})
 editor_options: 
   chunk_output_type: console
 
@@ -28,21 +27,11 @@ Authors :Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosje
 
 *These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
-Link to article : (TO come)
+Link to article :https://doi.org/10.1016/j.isci.2021.102761
 
 This code is made to be running on Seurat 301v2 Docker. Data and explanation about this code are available at : https://github.com/mathisnozais/MycPten
 
-If you have any questions on this analysis, please contact Mathis Nozais or Delphine Potier (just delphine ? contact author)
-
-#to do before publish
-```{r}
-#change all path to data showing my environment (NAS...) mettre lien à partir de Workspace ou il dowloaderont les fichier source (fastq et objet R)
-#change path to new file name without date..
-
-#test final sans aucun objet, avec le premier obj et avec le deuxieme
-
-#change output path
-```
+Any questions on this analysis, please contact Mathis Nozais (nozais@ciml.univ-mrs.fr) or Delphine Potier (potier@ciml.univ-mrs.fr)
 
 
 ```{r env_loading, include=FALSE}
@@ -54,15 +43,12 @@ library(ggplot2)
 library(gridExtra)
 library(DT)
 
-#Path to the analysis folder
-WORKSPACE <- "/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_repo/"
-# Path to the folder containing scripts used in the analysis
-CWD <- "/home/nozaism/Workspace/Function_delphine/" 
 # Load the R scripts containing the functions used in the analysis
-source("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Myc_Repo_2/02_Seurat_analysis/01_Script/Workflow_function.R")
+source(paste0(WORKING_DIR,"/02_Seurat_analysis/01_Script/Workflow_function.R"))
+
 #  Path to the folder that will contain output objects
-#OUTPUT_PATH <- (paste0(WORKSPACE,"02_Seurat_analysis/02_Output/"))
-OUTPUT_PATH <- ("/home/nozaism/Workspace/01_These/01_Project/Myc_Pten_Paper/Output_repo/")
+OUTPUT_PATH <- (paste0(WORKING_DIR,"/02_Seurat_analysis/02_Output/"))
+
 # Set the random number seed
 set.seed(1234)
 # Resolution parameter for Seurat clustering
@@ -96,9 +82,9 @@ part2 <- TRUE
 
 ```{r path1_loading, include=FALSE,eval=(part1 == TRUE )}
 # Load path for files
-PATH_MOUSE_DATA1 <- "/mnt/NAS6/BNlab/Saran/Rerun_CellRanger/MYC_PTEN_01_mm10/outs/filtered_feature_bc_matrix/"
+PATH_MOUSE_DATA1 <- (paste0(WORKING_DIR,"/02_Seurat_analysis/03_Data/Replicate1/mRNA/"))
 PROJECT_NAME1 <- paste("10X_", SAMPLE1, sep = "")
-PATH_HTO_DATA1 <- "/mnt/NAS5/BNlab/delphine/barecoded_scRNAseq/MYC_PTEN/CITE-seq-count_181031_Result_hd2/umi_count/"
+PATH_HTO_DATA1 <- (paste0(WORKING_DIR,"/02_Seurat_analysis/03_Data/Replicate1/HTO/"))
 ```
 
 ```{r Sample1_loading, include=FALSE,eval=(part1 == TRUE)}
@@ -386,10 +372,10 @@ ggplotly(DimPlot(Seurat1, reduction = "umap", group.by = "MULTI_ID", do.label = 
 
 ```{r path2_loading, include=FALSE,eval=(part1 == TRUE)}
 # Load path for files
-PATH_MOUSE_DATA2 <- "/mnt/NAS6/BNlab/Saran/Rerun_CellRanger/MYC_PTEN_02_mm10/outs/filtered_feature_bc_matrix/"
+PATH_MOUSE_DATA2 <- (paste0(WORKING_DIR,"/02_Seurat_analysis/03_Data/Replicate2/mRNA"))
 PROJECT_NAME2 <- paste("10X_", SAMPLE2, sep = "")
-PATH_HTO_DATA2 <- "/mnt/NAS6/BNlab/mathis/scRNAseq/DMATh3/CITE-seq-count141_190211_Result_hashtag_hd2/umi_count/"
-PATH_ADT_DATA2 <- "/mnt/NAS5/BNlab/delphine/barecoded_scRNAseq/MYC_PTEN2/CITE-seq-count141_190211_ADT-Result_hd2/umi_count"
+PATH_HTO_DATA2 <- (paste0(WORKING_DIR,"/02_Seurat_analysis/03_Data/Replicate2/HTO"))
+PATH_ADT_DATA2 <- (paste0(WORKING_DIR,"/02_Seurat_analysis/03_Data/Replicate2/ADT"))
 ```
 
 ```{r Sample_loading_2, include=FALSE,eval=(part1 == TRUE)}
@@ -910,9 +896,6 @@ FeaturePlot(object = Seurat, features = c("Il2ra","Klrg1","Il7r","Rora"), reduct
 FeaturePlot(object = Seurat, features = c("Eomes","Ncr1","Tbx21","Kit"), reduction = "umap", order = TRUE, cols = c("grey", "light blue","cyan3","cyan4","dodgerblue3","blue","mediumslateblue","purple","orchid3","red","brown","black"))
 #Nrc1 = NK
 #IL7R to separate ILC from NK; IL7R+ EOMES+ should be ILC1; EOMES+ IL7R- should be NK
-
-#comparison between marker and cluster position
-ggplotly(DimPlot(Seurat, reduction = "umap", do.label = TRUE, pt.size = 1))
 ```
 
 ```{r Tcell_selection, eval=(part2 == TRUE ),echo=FALSE}

@@ -4,10 +4,10 @@ Authors : Mathis Nozais1\*, Marie Loosveld1,2\*, Saran Pankaew1, Clémence Grosj
 
 \*These authors contributed equally: Mathis Nozais, Marie Loosveld; @ Corresponding authors: Dr Delphine Potier and Dr Dominique Payet-Bornet
 
-Link to article : (TO come put DOI badge)
+Link to article : [![Generic badge](https://img.shields.io/badge/DOI-10.1016/j.isci.2021.102761-blue.svg)](https://doi.org/10.1016/j.isci.2021.102761)
 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)  [![Generic badge](https://img.shields.io/badge/GEO-GSE169374-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169374)   [![Generic badge](https://img.shields.io/badge/SRA-GSE169374-blue.svg)](https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP311697)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)  [![Generic badge](https://img.shields.io/badge/GEO-GSE169374-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169374)   [![Generic badge](https://img.shields.io/badge/SRA-SRP311697-blue.svg)](https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP311697)
 
 If you have any questions on this analysis, please contact [Delphine Potier](mailto:potier@ciml.univ-mrs.fr) or [Mathis Nozais](mailto:nozais@ciml.univ-mrs.fr)
 
@@ -25,7 +25,7 @@ In order to re do Seurat Analysis you can follow guidelines and script here : [0
 
 ### Data Availability
 #### Fastq preprocessing
-- 10 Fastq are availabe in SRA under the accession ID *SRP311697*
+- 10 Fastq are availabe in [SRA](https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP311697) under the accession ID *SRP311697*
   - 4 Fastq files containing paired-end reads sequenced from the mRNA library of replicate 1 and 2
   - 4 Fastq files containing paired-end reads sequenced from the HTO library of replicate 1 and 2
   - 2 Fastq files containing paired-end reads sequenced from the ADT library of replicate 2
@@ -39,7 +39,7 @@ In order to re do Seurat Analysis you can follow guidelines and script here : [0
     - [Cite-seq-count ADT](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5198194) (*GSM5198194*)
 
 #### Seurat analysis
-- All Seurat Html report containing figures and analysis that we generated with R can be [found here](02_Seurat_analysis/02_Output/Report_preproduce/) :
+- All Seurat Html report containing figures and analysis that we generated with R can be [found here](02_Seurat_analysis/02_Output/Html_report/) :
 - Seurat rmd script to reproduce the preprocessing can be found [here](02_Seurat_analysis/01_Script/Experiment_preprocessing.Rmd), analysis rmd script [here](02_Seurat_analysis/01_Script/Experiment_analysis.Rmd) and the script to only generate figures [here](02_Seurat_analysis/01_Script/Figures.Rmd)
 
 #### Docker and Singularity images
