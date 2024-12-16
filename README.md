@@ -9,7 +9,7 @@ Link to article : [![Generic badge](https://img.shields.io/badge/DOI-10.1016/j.i
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4636520.svg)](https://doi.org/10.5281/zenodo.4636520)  [![Generic badge](https://img.shields.io/badge/GEO-GSE169374-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE169374)   [![Generic badge](https://img.shields.io/badge/SRA-SRP311697-blue.svg)](https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP311697)
 
-If you have any questions on this analysis, please contact [Delphine Potier](mailto:potier@ciml.univ-mrs.fr) or [Mathis Nozais](mailto:nozais@ciml.univ-mrs.fr)
+If you have any questions on this analysis, please contact [Delphine Potier](mailto:delphine.potier@cnrs.fr) or [Mathis Nozais](mailto:mathis.nozais@live.fr)
 
 ---
 
